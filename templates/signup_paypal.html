@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Signup - PayPal{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4">
+    <div class="max-w-md w-full">
+        <div class="text-center mb-8">
+            <a href="/" class="text-3xl font-bold text-indigo-600">📱 QR Capture</a>
+            <h2 class="mt-4 text-2xl font-bold text-gray-900">Complete Your Signup</h2>
+            <p class="mt-2 text-gray-600">{{ venue_name }}</p>
+        </div>
+        
+        <div class="bg-white shadow-lg rounded-xl p-8">
+            <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                <p class="text-sm text-blue-800">
+                    <strong>7-day free trial</strong> • Then $49/month<br>
+                    Cancel anytime from PayPal
+                </p>
+            </div>
+            
+            <div id="paypal-button-container"></div>
+            
+            <p id="result-message" class="hidden mt-4 text-center text-sm"></p>
+            
+            <div class="mt-6 text-center">
+                <a href="/signup" class="text-gray-500 hover:text-gray-700 text-sm">← Back to signup options</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&vault=true&intent=subscription"></script>
+<script>
+    const venueName = {{ venue_name | tojson }};
+    const venueEmail = {{ email | tojson }};
+    
+    paypal.Buttons({
+        style: {
+            shape: 'rect',
+            color: 'gold',
+            layout: 'vertical',
+            label: 'subscribe'
+        },
+        createSubscription: function(data, actions) {
+            return actions.subscription.create({
+                plan_id: '{{ paypal_plan_id }}'
+            });
+        },
+        onApprove: function(data, actions) {
+            // Subscription approved - create venue in our system
+            document.getElementById('result-message').innerHTML = 'Processing...';
+            document.getElementById('result-message').classList.remove('hidden');
+            document.getElementById('result-message').classList.add('text-blue-600');
+            
+            fetch('/api/paypal/create-subscription', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    subscription_id: data.subscriptionID,
+                    venue_name: venueName,
+                    email: venueEmail
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    document.getElementById('result-message').innerHTML = '✅ Success! Redirecting...';
+                    document.getElementById('result-message').classList.remove('text-blue-600');
+                    document.getElementById('result-message').classList.add('text-green-600');
+                    window.location.href = result.redirect || '/signup/success/paypal';
+                } else {
+                    throw new Error(result.error || 'Failed to create account');
+                }
+            })
+            .catch(error => {
+                document.getElementById('result-message').innerHTML = '❌ ' + error.message;
+                document.getElementById('result-message').classList.remove('text-blue-600');
+                document.getElementById('result-message').classList.add('text-red-600');
+            });
+        },
+        onError: function(err) {
+            document.getElementById('result-message').innerHTML = '❌ Payment error. Please try again.';
+            document.getElementById('result-message').classList.remove('hidden');
+            document.getElementById('result-message').classList.add('text-red-600');
+            console.error('PayPal error:', err);
+        }
+    }).render('#paypal-button-container');
+</script>
+{% endblock %}

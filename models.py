@@ -29,9 +29,11 @@ class Venue(db.Model):
     logo_url = db.Column(db.String(500))
     primary_color = db.Column(db.String(7), default="#6366f1")  # Hex color
     
-    # Stripe billing
+    # Billing (Stripe or PayPal)
+    payment_provider = db.Column(db.String(20), default='stripe')  # stripe or paypal
     stripe_customer_id = db.Column(db.String(100))
     stripe_subscription_id = db.Column(db.String(100))
+    paypal_subscription_id = db.Column(db.String(100))
     subscription_status = db.Column(db.String(50), default='trialing')  # trialing, active, past_due, canceled
     
     # Status

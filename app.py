@@ -1,8 +1,9 @@
 # app.py - QR Lead Capture SaaS
-# Quickest path to revenue: Stripe handles payments, webhooks handle provisioning
+# Dual payment processing: Stripe + PayPal for redundancy
 
 import os
 import stripe
+import requests
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
 from flask_mail import Mail, Message
 from functools import wraps
@@ -26,6 +27,14 @@ stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY')
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
 STRIPE_PRICE_ID = os.environ.get('STRIPE_PRICE_ID')  # Monthly subscription price
+STRIPE_ENABLED = bool(os.environ.get('STRIPE_SECRET_KEY'))
+
+# PayPal
+PAYPAL_CLIENT_ID = os.environ.get('PAYPAL_CLIENT_ID')
+PAYPAL_SECRET = os.environ.get('PAYPAL_SECRET')
+PAYPAL_PLAN_ID = os.environ.get('PAYPAL_PLAN_ID')
+PAYPAL_API_BASE = 'https://api-m.paypal.com'  # Use sandbox for testing
+PAYPAL_ENABLED = bool(PAYPAL_CLIENT_ID and PAYPAL_SECRET)
 
 # Email (for lead notifications)
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.smtp2go.com')
@@ -38,6 +47,15 @@ mail = Mail(app)
 
 # Base URL for QR codes
 BASE_URL = os.environ.get('BASE_URL', 'https://qrcapture.vonbase.com')
+
+def get_paypal_access_token():
+    """Get PayPal OAuth token"""
+    response = requests.post(
+        f"{PAYPAL_API_BASE}/v1/oauth2/token",
+        auth=(PAYPAL_CLIENT_ID, PAYPAL_SECRET),
+        data={'grant_type': 'client_credentials'}
+    )
+    return response.json().get('access_token')
 
 # =============================================================================
 # AUTH HELPERS
@@ -142,19 +160,45 @@ def send_lead_notification(venue, lead):
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    """Venue signup - collect info then redirect to Stripe"""
+    """Venue signup - show payment options"""
     if request.method == 'GET':
-        return render_template('signup.html')
+        return render_template('signup.html', 
+                             paypal_client_id=PAYPAL_CLIENT_ID,
+                             paypal_plan_id=PAYPAL_PLAN_ID,
+                             stripe_enabled=STRIPE_ENABLED,
+                             paypal_enabled=PAYPAL_ENABLED)
     
-    # Get form data
+    # POST = Stripe checkout (PayPal handled client-side)
     venue_name = request.form.get('venue_name', '').strip()
     email = request.form.get('email', '').strip()
+    payment_method = request.form.get('payment_method', 'stripe')
     
     if not venue_name or not email:
         flash('Venue name and email required', 'error')
-        return render_template('signup.html')
+        return render_template('signup.html',
+                             paypal_client_id=PAYPAL_CLIENT_ID,
+                             paypal_plan_id=PAYPAL_PLAN_ID,
+                             stripe_enabled=STRIPE_ENABLED,
+                             paypal_enabled=PAYPAL_ENABLED)
     
-    # Create Stripe checkout session
+    # Store in session for PayPal flow
+    session['pending_venue_name'] = venue_name
+    session['pending_email'] = email
+    
+    if payment_method == 'paypal':
+        # PayPal subscription is created client-side, redirect to PayPal page
+        return render_template('signup_paypal.html',
+                             venue_name=venue_name,
+                             email=email,
+                             paypal_client_id=PAYPAL_CLIENT_ID,
+                             paypal_plan_id=PAYPAL_PLAN_ID,
+                             base_url=BASE_URL)
+    
+    # Stripe checkout
+    if not STRIPE_ENABLED:
+        flash('Stripe is not configured. Please use PayPal.', 'error')
+        return redirect(url_for('signup'))
+    
     try:
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
@@ -171,7 +215,7 @@ def signup():
                 'email': email
             },
             subscription_data={
-                'trial_period_days': 7,  # 7-day free trial
+                'trial_period_days': 7,
                 'metadata': {
                     'venue_name': venue_name
                 }
@@ -180,8 +224,12 @@ def signup():
         return redirect(checkout_session.url, code=303)
     except Exception as e:
         app.logger.error(f"Stripe checkout error: {e}")
-        flash('Payment system error. Please try again.', 'error')
-        return render_template('signup.html')
+        flash('Card payment unavailable. Please try PayPal.', 'error')
+        return render_template('signup.html',
+                             paypal_client_id=PAYPAL_CLIENT_ID,
+                             paypal_plan_id=PAYPAL_PLAN_ID,
+                             stripe_enabled=STRIPE_ENABLED,
+                             paypal_enabled=PAYPAL_ENABLED)
 
 @app.route('/signup/success')
 def signup_success():
@@ -288,6 +336,111 @@ def send_welcome_email(venue):
         html=render_template('email/welcome.html', venue=venue, qr_url=qr_url, base_url=BASE_URL)
     )
     mail.send(msg)
+
+# =============================================================================
+# PAYPAL CHECKOUT & BILLING
+# =============================================================================
+
+@app.route('/api/paypal/create-subscription', methods=['POST'])
+def paypal_create_subscription():
+    """Create PayPal subscription - called from client-side"""
+    data = request.get_json()
+    venue_name = data.get('venue_name') or session.get('pending_venue_name', 'New Venue')
+    email = data.get('email') or session.get('pending_email', '')
+    subscription_id = data.get('subscription_id')
+    
+    if not subscription_id:
+        return jsonify({'error': 'No subscription ID'}), 400
+    
+    # Verify subscription with PayPal
+    access_token = get_paypal_access_token()
+    response = requests.get(
+        f"{PAYPAL_API_BASE}/v1/billing/subscriptions/{subscription_id}",
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+    
+    if response.status_code != 200:
+        return jsonify({'error': 'Could not verify subscription'}), 400
+    
+    sub_data = response.json()
+    
+    # Check if venue already exists
+    existing = Venue.query.filter_by(paypal_subscription_id=subscription_id).first()
+    if existing:
+        session['venue_id'] = existing.id
+        return jsonify({'success': True, 'venue_id': existing.id})
+    
+    # Create new venue
+    venue = Venue(
+        name=venue_name,
+        email=email or sub_data.get('subscriber', {}).get('email_address', ''),
+        paypal_subscription_id=subscription_id,
+        subscription_status='trialing' if sub_data.get('status') == 'APPROVAL_PENDING' else 'active',
+        payment_provider='paypal'
+    )
+    db.session.add(venue)
+    db.session.commit()
+    
+    # Log them in
+    session['venue_id'] = venue.id
+    
+    # Clear pending data
+    session.pop('pending_venue_name', None)
+    session.pop('pending_email', None)
+    
+    # Send welcome email
+    try:
+        send_welcome_email(venue)
+    except Exception as e:
+        app.logger.error(f"Failed to send welcome email: {e}")
+    
+    return jsonify({'success': True, 'venue_id': venue.id, 'redirect': url_for('signup_success_paypal')})
+
+@app.route('/signup/success/paypal')
+def signup_success_paypal():
+    """PayPal post-subscription success page"""
+    venue = get_current_venue()
+    if not venue:
+        return redirect(url_for('home'))
+    return render_template('signup_success.html', venue=venue, base_url=BASE_URL)
+
+@app.route('/webhook/paypal', methods=['POST'])
+def paypal_webhook():
+    """Handle PayPal webhooks"""
+    # For production, verify webhook signature
+    data = request.get_json()
+    event_type = data.get('event_type')
+    resource = data.get('resource', {})
+    
+    app.logger.info(f"PayPal webhook: {event_type}")
+    
+    if event_type == 'BILLING.SUBSCRIPTION.ACTIVATED':
+        subscription_id = resource.get('id')
+        venue = Venue.query.filter_by(paypal_subscription_id=subscription_id).first()
+        if venue:
+            venue.subscription_status = 'active'
+            db.session.commit()
+    
+    elif event_type == 'BILLING.SUBSCRIPTION.CANCELLED':
+        subscription_id = resource.get('id')
+        venue = Venue.query.filter_by(paypal_subscription_id=subscription_id).first()
+        if venue:
+            venue.subscription_status = 'canceled'
+            venue.active = False
+            db.session.commit()
+    
+    elif event_type == 'BILLING.SUBSCRIPTION.SUSPENDED':
+        subscription_id = resource.get('id')
+        venue = Venue.query.filter_by(paypal_subscription_id=subscription_id).first()
+        if venue:
+            venue.subscription_status = 'past_due'
+            db.session.commit()
+    
+    elif event_type == 'PAYMENT.SALE.COMPLETED':
+        # Recurring payment successful
+        pass
+    
+    return jsonify({'received': True})
 
 # =============================================================================
 # VENUE DASHBOARD
