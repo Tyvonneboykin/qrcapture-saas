@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+        .header { background: #6366f1; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+        .content { background: #f8f9fa; padding: 20px; border-radius: 0 0 8px 8px; }
+        .lead-card { background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .label { color: #666; font-size: 12px; text-transform: uppercase; }
+        .value { font-size: 16px; margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0;">🎯 New Lead!</h1>
+        </div>
+        <div class="content">
+            <p>Someone just signed up at <strong>{{ venue.name }}</strong>!</p>
+            
+            <div class="lead-card">
+                {% if lead.name %}
+                <div style="margin-bottom: 12px;">
+                    <div class="label">Name</div>
+                    <div class="value">{{ lead.name }}</div>
+                </div>
+                {% endif %}
+                
+                {% if lead.email %}
+                <div style="margin-bottom: 12px;">
+                    <div class="label">Email</div>
+                    <div class="value"><a href="mailto:{{ lead.email }}">{{ lead.email }}</a></div>
+                </div>
+                {% endif %}
+                
+                {% if lead.phone %}
+                <div style="margin-bottom: 12px;">
+                    <div class="label">Phone</div>
+                    <div class="value"><a href="tel:{{ lead.phone }}">{{ lead.phone }}</a></div>
+                </div>
+                {% endif %}
+                
+                <div>
+                    <div class="label">Captured</div>
+                    <div class="value">{{ lead.created_at.strftime('%B %d, %Y at %I:%M %p') if lead.created_at else 'Just now' }}</div>
+                </div>
+            </div>
+            
+            <p style="color: #666; font-size: 14px;">
+                View all leads in your <a href="{{ url_for('dashboard', _external=True) }}">dashboard</a>.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

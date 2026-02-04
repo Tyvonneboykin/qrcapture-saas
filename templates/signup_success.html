@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome! - QR Lead Capture{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4">
+    <div class="max-w-lg w-full text-center">
+        <div class="text-6xl mb-6">🎉</div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">You're All Set!</h1>
+        
+        {% if venue %}
+        <p class="text-gray-600 mb-8">
+            Your QR capture page is live and ready to go.
+        </p>
+        
+        <div class="bg-white shadow-lg rounded-xl p-6 mb-6">
+            <h2 class="font-semibold text-gray-900 mb-2">Your Capture URL</h2>
+            <p class="font-mono text-indigo-600 break-all">{{ base_url }}{{ venue.capture_url }}</p>
+        </div>
+        
+        <div class="space-y-3">
+            <a href="/dashboard" class="block w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700">
+                Go to Dashboard →
+            </a>
+            <a href="{{ base_url }}{{ venue.capture_url }}" target="_blank" 
+               class="block w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50">
+                Preview Capture Page
+            </a>
+        </div>
+        {% else %}
+        <p class="text-gray-600 mb-8">
+            Your account is being set up. You'll receive an email shortly with your login details.
+        </p>
+        <a href="/login" class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700">
+            Go to Login
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

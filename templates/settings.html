@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - {{ venue.name }}{% endblock %}
+
+{% block body %}
+<nav class="bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/dashboard" class="text-xl font-bold text-indigo-600">📱 QR Capture</a>
+        <div class="flex items-center space-x-4">
+            <span class="text-gray-600">{{ venue.name }}</span>
+            <a href="/logout" class="text-gray-500 hover:text-gray-700">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-2xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Settings</h1>
+        <a href="/dashboard" class="text-indigo-600 hover:underline">← Back to Dashboard</a>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="mb-4 p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
+    <form method="POST" class="bg-white shadow rounded-xl p-6 space-y-6">
+        <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Venue Name</label>
+            <input type="text" id="name" name="name" value="{{ venue.name }}"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+        
+        <div>
+            <label for="welcome_message" class="block text-sm font-medium text-gray-700 mb-2">Welcome Message</label>
+            <textarea id="welcome_message" name="welcome_message" rows="3"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">{{ venue.welcome_message }}</textarea>
+            <p class="mt-1 text-sm text-gray-500">Shown on your capture page above the form</p>
+        </div>
+        
+        <div>
+            <label for="thank_you_message" class="block text-sm font-medium text-gray-700 mb-2">Thank You Message</label>
+            <textarea id="thank_you_message" name="thank_you_message" rows="3"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">{{ venue.thank_you_message }}</textarea>
+            <p class="mt-1 text-sm text-gray-500">Shown after successful submission</p>
+        </div>
+        
+        <div>
+            <label for="primary_color" class="block text-sm font-medium text-gray-700 mb-2">Brand Color</label>
+            <div class="flex items-center gap-3">
+                <input type="color" id="primary_color" name="primary_color" value="{{ venue.primary_color }}"
+                       class="h-10 w-20 rounded cursor-pointer">
+                <span class="text-gray-500">{{ venue.primary_color }}</span>
+            </div>
+        </div>
+        
+        <div class="pt-4">
+            <button type="submit" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700">
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

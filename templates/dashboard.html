@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ venue.name }}{% endblock %}
+
+{% block body %}
+<!-- Nav -->
+<nav class="bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/dashboard" class="text-xl font-bold text-indigo-600">📱 QR Capture</a>
+        <div class="flex items-center space-x-4">
+            <span class="text-gray-600">{{ venue.name }}</span>
+            <a href="/logout" class="text-gray-500 hover:text-gray-700">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Stats Row -->
+    <div class="grid md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-3xl font-bold text-indigo-600">{{ venue.lead_count }}</div>
+            <div class="text-gray-600">Total Leads</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-3xl font-bold text-green-600">{{ venue.leads_this_month }}</div>
+            <div class="text-gray-600">This Month</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <div class="text-sm font-mono text-gray-800 break-all">{{ base_url }}{{ venue.capture_url }}</div>
+            <div class="text-gray-600 mt-1">Your QR Link</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium
+                {% if venue.subscription_status == 'active' %}bg-green-100 text-green-800
+                {% elif venue.subscription_status == 'trialing' %}bg-blue-100 text-blue-800
+                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                {{ venue.subscription_status | title }}
+            </span>
+            <div class="text-gray-600 mt-1">Subscription</div>
+        </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="flex flex-wrap gap-4 mb-8">
+        <a href="/dashboard/settings" class="bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">
+            ⚙️ Settings
+        </a>
+        <a href="/dashboard/billing" class="bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">
+            💳 Billing
+        </a>
+        <a href="/dashboard/leads/export" class="bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">
+            📥 Export CSV
+        </a>
+        <a href="{{ base_url }}{{ venue.capture_url }}" target="_blank" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+            👁️ Preview Capture Page
+        </a>
+    </div>
+    
+    <!-- QR Code Section -->
+    <div class="bg-white rounded-xl shadow p-6 mb-8">
+        <h2 class="text-lg font-semibold mb-4">Your QR Code</h2>
+        <div class="flex flex-col md:flex-row items-center gap-6">
+            <div class="bg-white p-4 border-2 border-gray-200 rounded-xl">
+                <div id="qrcode" class="w-48 h-48"></div>
+            </div>
+            <div class="flex-1">
+                <p class="text-gray-600 mb-4">
+                    Print this QR code and display it at your venue. Customers scan it with their phone camera
+                    to access your lead capture form.
+                </p>
+                <div class="flex gap-3">
+                    <button onclick="downloadQR()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+                        Download QR Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leads Table -->
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold">Recent Leads</h2>
+        </div>
+        
+        {% if leads %}
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for lead in leads %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">{{ lead.name or '—' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if lead.email %}
+                            <a href="mailto:{{ lead.email }}" class="text-indigo-600 hover:underline">{{ lead.email }}</a>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if lead.phone %}
+                            <a href="tel:{{ lead.phone }}" class="text-indigo-600 hover:underline">{{ lead.phone }}</a>
+                            {% else %}—{% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">
+                            {{ lead.created_at.strftime('%b %d, %Y %I:%M %p') if lead.created_at else '—' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="px-6 py-12 text-center text-gray-500">
+            <div class="text-4xl mb-2">📭</div>
+            <p>No leads yet. Share your QR code to start capturing customers!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+    const qrUrl = "{{ base_url }}{{ venue.capture_url }}";
+    const qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: qrUrl,
+        width: 192,
+        height: 192,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    
+    function downloadQR() {
+        const canvas = document.querySelector('#qrcode canvas');
+        if (canvas) {
+            const link = document.createElement('a');
+            link.download = '{{ venue.slug }}-qrcode.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    }
+</script>
+{% endblock %}

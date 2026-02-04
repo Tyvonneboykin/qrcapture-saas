@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}QR Lead Capture - Turn Walk-ins Into Repeat Customers{% endblock %}
+
+{% block body %}
+<!-- Nav -->
+<nav class="bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="/" class="text-2xl font-bold text-indigo-600">📱 QR Capture</a>
+        <div class="space-x-4">
+            <a href="/login" class="text-gray-600 hover:text-gray-900">Login</a>
+            <a href="/signup" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Get Started</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="gradient-bg text-white py-20">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <h1 class="text-5xl font-bold mb-6">Turn Walk-ins Into Repeat Customers</h1>
+        <p class="text-xl mb-8 opacity-90">QR codes that capture customer info instantly. No app needed. Just scan and connect.</p>
+        <a href="/signup" class="bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 inline-block">
+            Start Free Trial →
+        </a>
+        <p class="mt-4 text-sm opacity-75">7-day free trial • No credit card required to start</p>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-20">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-3xl font-bold text-center mb-12">How It Works</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="text-5xl mb-4">📲</div>
+                <h3 class="text-xl font-semibold mb-2">1. Get Your QR Code</h3>
+                <p class="text-gray-600">Sign up and we'll generate a custom QR code for your venue instantly.</p>
+            </div>
+            <div class="text-center">
+                <div class="text-5xl mb-4">👆</div>
+                <h3 class="text-xl font-semibold mb-2">2. Customers Scan</h3>
+                <p class="text-gray-600">Display it on tables, receipts, or at the counter. Customers scan with their phone.</p>
+            </div>
+            <div class="text-center">
+                <div class="text-5xl mb-4">📧</div>
+                <h3 class="text-xl font-semibold mb-2">3. Get Notified</h3>
+                <p class="text-gray-600">Receive instant email notifications with each new lead. Export anytime.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits -->
+<section class="bg-white py-20">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+                <h2 class="text-3xl font-bold mb-6">Built for Restaurants, Bars & Lounges</h2>
+                <ul class="space-y-4">
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3">✓</span>
+                        <span><strong>No app downloads</strong> - works on any phone's camera</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3">✓</span>
+                        <span><strong>Instant notifications</strong> - know when someone signs up</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3">✓</span>
+                        <span><strong>Export to CSV</strong> - use with any email marketing tool</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3">✓</span>
+                        <span><strong>Custom branding</strong> - your colors, your message</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3">✓</span>
+                        <span><strong>Setup in 5 minutes</strong> - no technical skills needed</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="bg-gray-100 rounded-xl p-8 text-center">
+                <div class="text-6xl mb-4">📊</div>
+                <p class="text-gray-600">Average venue captures <strong class="text-indigo-600">50+ leads/month</strong></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section class="py-20" id="pricing">
+    <div class="max-w-xl mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold mb-8">Simple Pricing</h2>
+        <div class="bg-white rounded-2xl shadow-lg p-8">
+            <div class="text-5xl font-bold text-indigo-600 mb-2">$49<span class="text-xl text-gray-500">/mo</span></div>
+            <p class="text-gray-600 mb-6">Everything you need to capture leads</p>
+            <ul class="text-left space-y-3 mb-8">
+                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Unlimited leads</li>
+                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Custom QR code</li>
+                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Email notifications</li>
+                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Lead dashboard</li>
+                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> CSV export</li>
+                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Custom branding</li>
+            </ul>
+            <a href="/signup" class="block w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700">
+                Start 7-Day Free Trial
+            </a>
+            <p class="mt-3 text-sm text-gray-500">Cancel anytime • No setup fees</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="gradient-bg text-white py-16">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold mb-4">Ready to Grow Your Customer List?</h2>
+        <p class="text-xl mb-8 opacity-90">Join hundreds of venues already capturing leads with QR codes.</p>
+        <a href="/signup" class="bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 inline-block">
+            Get Started Free →
+        </a>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-900 text-gray-400 py-8">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+        <p>© 2026 QR Lead Capture by Von Base Enterprises</p>
+    </div>
+</footer>
+{% endblock %}
