@@ -879,6 +879,35 @@ def serve_logo(slug):
         }
     )
 
+@app.route('/dashboard/menu/fix-heic', methods=['POST'])
+@venue_required
+def fix_heic_menu():
+    """Convert existing HEIC menu to JPEG"""
+    venue = get_current_venue()
+    
+    if not venue.has_menu:
+        flash('No menu to fix.', 'error')
+        return redirect(url_for('settings'))
+    
+    # Check if it's actually HEIC
+    actual_format = detect_image_format(venue.menu_data)
+    if actual_format != 'heic':
+        flash('Menu is not HEIC format, no conversion needed.', 'info')
+        return redirect(url_for('settings'))
+    
+    # Convert
+    converted = convert_heic_to_jpeg(venue.menu_data)
+    if converted:
+        venue.menu_data = converted
+        venue.menu_filename = venue.menu_filename.rsplit('.', 1)[0] + '.jpg' if venue.menu_filename else 'menu.jpg'
+        venue.menu_content_type = 'image/jpeg'
+        db.session.commit()
+        flash('Menu converted from HEIC to JPEG!', 'success')
+    else:
+        flash('Could not convert HEIC. Please re-upload as JPG.', 'error')
+    
+    return redirect(url_for('settings'))
+
 @app.route('/dashboard/billing')
 @venue_required
 def billing():
