@@ -359,57 +359,90 @@ def send_welcome_email(venue):
 @app.route('/api/paypal/create-subscription', methods=['POST'])
 def paypal_create_subscription():
     """Create PayPal subscription - called from client-side"""
-    data = request.get_json()
-    venue_name = data.get('venue_name') or session.get('pending_venue_name', 'New Venue')
-    email = data.get('email') or session.get('pending_email', '')
-    subscription_id = data.get('subscription_id')
-    
-    if not subscription_id:
-        return jsonify({'error': 'No subscription ID'}), 400
-    
-    # Verify subscription with PayPal
-    access_token = get_paypal_access_token()
-    response = requests.get(
-        f"{PAYPAL_API_BASE}/v1/billing/subscriptions/{subscription_id}",
-        headers={'Authorization': f'Bearer {access_token}'}
-    )
-    
-    if response.status_code != 200:
-        return jsonify({'error': 'Could not verify subscription'}), 400
-    
-    sub_data = response.json()
-    
-    # Check if venue already exists
-    existing = Venue.query.filter_by(paypal_subscription_id=subscription_id).first()
-    if existing:
-        session['venue_id'] = existing.id
-        return jsonify({'success': True, 'venue_id': existing.id})
-    
-    # Create new venue
-    venue = Venue(
-        name=venue_name,
-        email=email or sub_data.get('subscriber', {}).get('email_address', ''),
-        paypal_subscription_id=subscription_id,
-        subscription_status='trialing' if sub_data.get('status') == 'APPROVAL_PENDING' else 'active',
-        payment_provider='paypal'
-    )
-    db.session.add(venue)
-    db.session.commit()
-    
-    # Log them in
-    session['venue_id'] = venue.id
-    
-    # Clear pending data
-    session.pop('pending_venue_name', None)
-    session.pop('pending_email', None)
-    
-    # Send welcome email
     try:
-        send_welcome_email(venue)
+        data = request.get_json() or {}
+        venue_name = data.get('venue_name') or session.get('pending_venue_name', 'New Venue')
+        email = data.get('email') or session.get('pending_email', '')
+        subscription_id = data.get('subscription_id')
+        
+        app.logger.info(f"PayPal subscription request: venue={venue_name}, email={email}, sub_id={subscription_id}")
+        
+        if not subscription_id:
+            return jsonify({'error': 'No subscription ID provided'}), 400
+        
+        # Verify subscription with PayPal
+        try:
+            access_token = get_paypal_access_token()
+            if not access_token:
+                app.logger.error("Failed to get PayPal access token")
+                return jsonify({'error': 'Payment verification failed'}), 500
+                
+            response = requests.get(
+                f"{PAYPAL_API_BASE}/v1/billing/subscriptions/{subscription_id}",
+                headers={'Authorization': f'Bearer {access_token}'}
+            )
+            
+            if response.status_code != 200:
+                app.logger.error(f"PayPal verification failed: {response.status_code} - {response.text}")
+                return jsonify({'error': 'Could not verify subscription with PayPal'}), 400
+            
+            sub_data = response.json()
+            app.logger.info(f"PayPal subscription verified: status={sub_data.get('status')}")
+            
+        except requests.RequestException as e:
+            app.logger.error(f"PayPal API error: {e}")
+            return jsonify({'error': 'Payment service unavailable'}), 503
+        
+        # Check if venue already exists with this subscription
+        existing = Venue.query.filter_by(paypal_subscription_id=subscription_id).first()
+        if existing:
+            session['venue_id'] = existing.id
+            return jsonify({'success': True, 'venue_id': existing.id, 'redirect': url_for('dashboard')})
+        
+        # Also check by email to prevent duplicates
+        email_to_use = (email or sub_data.get('subscriber', {}).get('email_address', '')).strip().lower()
+        existing_email = Venue.query.filter(db.func.lower(Venue.email) == email_to_use).first()
+        if existing_email:
+            # Update existing venue with PayPal info
+            existing_email.paypal_subscription_id = subscription_id
+            existing_email.payment_provider = 'paypal'
+            existing_email.subscription_status = 'trialing' if sub_data.get('status') in ('APPROVAL_PENDING', 'ACTIVE') else 'active'
+            db.session.commit()
+            session['venue_id'] = existing_email.id
+            return jsonify({'success': True, 'venue_id': existing_email.id, 'redirect': url_for('dashboard')})
+        
+        # Create new venue
+        venue = Venue(
+            name=venue_name,
+            email=email_to_use,
+            paypal_subscription_id=subscription_id,
+            subscription_status='trialing',  # PayPal plan has 7-day trial
+            payment_provider='paypal'
+        )
+        db.session.add(venue)
+        db.session.commit()
+        
+        app.logger.info(f"Created venue: id={venue.id}, slug={venue.slug}")
+        
+        # Log them in
+        session['venue_id'] = venue.id
+        
+        # Clear pending data
+        session.pop('pending_venue_name', None)
+        session.pop('pending_email', None)
+        
+        # Send welcome email
+        try:
+            send_welcome_email(venue)
+        except Exception as e:
+            app.logger.error(f"Failed to send welcome email: {e}")
+        
+        return jsonify({'success': True, 'venue_id': venue.id, 'redirect': url_for('signup_success_paypal')})
+        
     except Exception as e:
-        app.logger.error(f"Failed to send welcome email: {e}")
-    
-    return jsonify({'success': True, 'venue_id': venue.id, 'redirect': url_for('signup_success_paypal')})
+        app.logger.error(f"PayPal subscription error: {e}")
+        db.session.rollback()
+        return jsonify({'error': 'Account creation failed. Please try again or contact support.'}), 500
 
 @app.route('/signup/success/paypal')
 def signup_success_paypal():
@@ -463,21 +496,33 @@ def paypal_webhook():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """Simple email-based login (sends magic link)"""
+    """Simple email-based login"""
     if request.method == 'GET':
         return render_template('login.html')
     
-    email = request.form.get('email', '').strip().lower()
-    venue = Venue.query.filter_by(email=email).first()
-    
-    if venue:
-        # For MVP: just log them in directly
-        # TODO: Implement magic link for security
-        session['venue_id'] = venue.id
-        return redirect(url_for('dashboard'))
-    
-    flash('No account found with that email', 'error')
-    return render_template('login.html')
+    try:
+        email = request.form.get('email', '').strip().lower()
+        
+        if not email:
+            flash('Please enter your email', 'error')
+            return render_template('login.html')
+        
+        # Try exact match first, then case-insensitive
+        venue = Venue.query.filter_by(email=email).first()
+        if not venue:
+            venue = Venue.query.filter(db.func.lower(Venue.email) == email).first()
+        
+        if venue:
+            session['venue_id'] = venue.id
+            return redirect(url_for('dashboard'))
+        
+        flash('No account found with that email. Please sign up first.', 'error')
+        return render_template('login.html')
+        
+    except Exception as e:
+        app.logger.error(f"Login error: {e}")
+        flash('Something went wrong. Please try again.', 'error')
+        return render_template('login.html')
 
 @app.route('/logout')
 def logout():
@@ -488,13 +533,23 @@ def logout():
 @venue_required
 def dashboard():
     """Venue owner dashboard - see leads"""
-    venue = get_current_venue()
-    leads = venue.leads.order_by(Lead.created_at.desc()).limit(100).all()
-    
-    return render_template('dashboard.html', 
-                         venue=venue, 
-                         leads=leads,
-                         base_url=BASE_URL)
+    try:
+        venue = get_current_venue()
+        if not venue:
+            session.pop('venue_id', None)
+            flash('Session expired. Please log in again.', 'warning')
+            return redirect(url_for('login'))
+        
+        leads = venue.leads.order_by(Lead.created_at.desc()).limit(100).all()
+        
+        return render_template('dashboard.html', 
+                             venue=venue, 
+                             leads=leads,
+                             base_url=BASE_URL)
+    except Exception as e:
+        app.logger.error(f"Dashboard error: {e}")
+        flash('Something went wrong loading your dashboard.', 'error')
+        return redirect(url_for('home'))
 
 @app.route('/dashboard/settings', methods=['GET', 'POST'])
 @venue_required
@@ -573,6 +628,47 @@ def api_leads():
     venue = get_current_venue()
     leads = venue.leads.order_by(Lead.created_at.desc()).limit(100).all()
     return jsonify([lead.to_dict() for lead in leads])
+
+@app.route('/api/health')
+def health_check():
+    """Health check endpoint"""
+    try:
+        # Test database connection
+        venue_count = Venue.query.count()
+        lead_count = Lead.query.count()
+        return jsonify({
+            'status': 'healthy',
+            'database': 'connected',
+            'venues': venue_count,
+            'leads': lead_count,
+            'stripe_enabled': STRIPE_ENABLED,
+            'paypal_enabled': PAYPAL_ENABLED
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e)
+        }), 500
+
+@app.route('/api/debug/venue/<email>')
+def debug_venue(email):
+    """Debug endpoint to check if venue exists (remove in production)"""
+    try:
+        venue = Venue.query.filter(db.func.lower(Venue.email) == email.lower()).first()
+        if venue:
+            return jsonify({
+                'found': True,
+                'id': venue.id,
+                'name': venue.name,
+                'email': venue.email,
+                'slug': venue.slug,
+                'status': venue.subscription_status,
+                'provider': venue.payment_provider,
+                'created': venue.created_at.isoformat() if venue.created_at else None
+            })
+        return jsonify({'found': False, 'email_searched': email})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # =============================================================================
 # INIT

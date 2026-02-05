@@ -34,6 +34,19 @@
 <script>
     const venueName = {{ venue_name | tojson }};
     const venueEmail = {{ email | tojson }};
+    const resultEl = document.getElementById('result-message');
+    
+    function showMessage(msg, isError) {
+        resultEl.innerHTML = msg;
+        resultEl.classList.remove('hidden', 'text-blue-600', 'text-green-600', 'text-red-600');
+        resultEl.classList.add(isError ? 'text-red-600' : 'text-blue-600');
+    }
+    
+    function showSuccess(msg) {
+        resultEl.innerHTML = msg;
+        resultEl.classList.remove('hidden', 'text-blue-600', 'text-red-600');
+        resultEl.classList.add('text-green-600');
+    }
     
     paypal.Buttons({
         style: {
@@ -48,45 +61,58 @@
             });
         },
         onApprove: function(data, actions) {
-            // Subscription approved - create venue in our system
-            document.getElementById('result-message').innerHTML = 'Processing...';
-            document.getElementById('result-message').classList.remove('hidden');
-            document.getElementById('result-message').classList.add('text-blue-600');
+            showMessage('✨ Payment successful! Setting up your account...', false);
             
-            fetch('/api/paypal/create-subscription', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    subscription_id: data.subscriptionID,
-                    venue_name: venueName,
-                    email: venueEmail
+            // Small delay to ensure PayPal has processed
+            setTimeout(function() {
+                fetch('/api/paypal/create-subscription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        subscription_id: data.subscriptionID,
+                        venue_name: venueName,
+                        email: venueEmail
+                    })
                 })
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    document.getElementById('result-message').innerHTML = '✅ Success! Redirecting...';
-                    document.getElementById('result-message').classList.remove('text-blue-600');
-                    document.getElementById('result-message').classList.add('text-green-600');
-                    window.location.href = result.redirect || '/signup/success/paypal';
-                } else {
-                    throw new Error(result.error || 'Failed to create account');
-                }
-            })
-            .catch(error => {
-                document.getElementById('result-message').innerHTML = '❌ ' + error.message;
-                document.getElementById('result-message').classList.remove('text-blue-600');
-                document.getElementById('result-message').classList.add('text-red-600');
-            });
+                .then(function(response) {
+                    if (!response.ok) {
+                        return response.json().then(function(err) {
+                            throw new Error(err.error || 'Server error');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(function(result) {
+                    if (result.success) {
+                        showSuccess('✅ Account created! Redirecting to dashboard...');
+                        setTimeout(function() {
+                            window.location.href = result.redirect || '/dashboard';
+                        }, 1000);
+                    } else {
+                        throw new Error(result.error || 'Failed to create account');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Account creation error:', error);
+                    showMessage('❌ ' + (error.message || 'Something went wrong. Please try logging in with your email.'), true);
+                    // Add login link
+                    resultEl.innerHTML += '<br><a href="/login" class="underline mt-2 inline-block">Try logging in →</a>';
+                });
+            }, 500);
+        },
+        onCancel: function(data) {
+            showMessage('Payment cancelled. You can try again when ready.', true);
         },
         onError: function(err) {
-            document.getElementById('result-message').innerHTML = '❌ Payment error. Please try again.';
-            document.getElementById('result-message').classList.remove('hidden');
-            document.getElementById('result-message').classList.add('text-red-600');
-            console.error('PayPal error:', err);
+            console.error('PayPal SDK error:', err);
+            showMessage('❌ Payment error. Please refresh and try again.', true);
         }
-    }).render('#paypal-button-container');
+    }).render('#paypal-button-container').catch(function(err) {
+        console.error('PayPal button render error:', err);
+        document.getElementById('paypal-button-container').innerHTML = 
+            '<p class="text-red-600">Payment system unavailable. Please try again later or <a href="/signup" class="underline">use a different payment method</a>.</p>';
+    });
 </script>
 {% endblock %}
