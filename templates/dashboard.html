@@ -131,6 +131,23 @@
         </div>
         {% endif %}
 
+        <!-- Live Status Bar -->
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" id="liveIndicator"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <span>Live</span>
+                <span class="text-gray-300">•</span>
+                <span id="lastUpdated">Updated just now</span>
+            </div>
+            <button onclick="refreshDashboard()" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+                <svg class="w-4 h-4" id="refreshIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Refresh
+            </button>
+        </div>
+
         <!-- Stats Grid -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
             <!-- Total Leads -->
@@ -141,7 +158,7 @@
                     </div>
                     <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">All time</span>
                 </div>
-                <div class="text-3xl font-bold text-gray-900">{{ venue.lead_count }}</div>
+                <div class="text-3xl font-bold text-gray-900" id="statTotal">{{ venue.lead_count }}</div>
                 <div class="text-sm text-gray-500">Total Leads</div>
             </div>
             
@@ -151,14 +168,12 @@
                     <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
                         <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                     </div>
-                    {% if venue.leads_this_month > 0 %}
-                    <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1">
+                    <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1" id="monthBadge" style="display: {% if venue.leads_this_month > 0 %}flex{% else %}none{% endif %}">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
                         Active
                     </span>
-                    {% endif %}
                 </div>
-                <div class="text-3xl font-bold text-gray-900">{{ venue.leads_this_month }}</div>
+                <div class="text-3xl font-bold text-gray-900" id="statMonth">{{ venue.leads_this_month }}</div>
                 <div class="text-sm text-gray-500">This Month</div>
             </div>
             
@@ -169,7 +184,7 @@
                         <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     </div>
                 </div>
-                <div class="text-3xl font-bold text-gray-900">{{ venue.leads_this_week }}</div>
+                <div class="text-3xl font-bold text-gray-900" id="statWeek">{{ venue.leads_this_week }}</div>
                 <div class="text-sm text-gray-500">This Week</div>
             </div>
             
@@ -179,14 +194,12 @@
                     <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
                         <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
-                    {% if venue.leads_today > 0 %}
-                    <span class="relative flex h-2 w-2">
+                    <span class="relative flex h-2 w-2" id="todayPulse" style="display: {% if venue.leads_today > 0 %}flex{% else %}none{% endif %}">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                     </span>
-                    {% endif %}
                 </div>
-                <div class="text-3xl font-bold text-gray-900">{{ venue.leads_today }}</div>
+                <div class="text-3xl font-bold text-gray-900" id="statToday">{{ venue.leads_today }}</div>
                 <div class="text-sm text-gray-500">Today</div>
             </div>
         </div>
@@ -384,10 +397,24 @@
     </div>
 </div>
 
+<!-- New Lead Toast Notification -->
+<div id="newLeadToast" class="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-4 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
+    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+    </div>
+    <div>
+        <div class="font-semibold">New Lead Captured! 🎉</div>
+        <div class="text-sm text-white/80" id="toastLeadName"></div>
+    </div>
+</div>
+
 <!-- QR Code Library -->
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script>
     const qrUrl = "{{ base_url }}{{ venue.capture_url }}";
+    let lastLeadCount = {{ venue.lead_count }};
+    let lastUpdateTime = Date.now();
+    let refreshInterval;
     
     // Generate QR Code
     new QRCode(document.getElementById("qrcode"), {
@@ -437,5 +464,120 @@
             }
         });
     }
+    
+    // ===== AUTO-REFRESH FUNCTIONALITY =====
+    
+    // Update "last updated" text
+    function updateLastUpdatedText() {
+        const seconds = Math.floor((Date.now() - lastUpdateTime) / 1000);
+        const el = document.getElementById('lastUpdated');
+        if (seconds < 5) {
+            el.textContent = 'Updated just now';
+        } else if (seconds < 60) {
+            el.textContent = `Updated ${seconds}s ago`;
+        } else {
+            const minutes = Math.floor(seconds / 60);
+            el.textContent = `Updated ${minutes}m ago`;
+        }
+    }
+    
+    // Show new lead toast notification
+    function showNewLeadToast(leadName) {
+        const toast = document.getElementById('newLeadToast');
+        const nameEl = document.getElementById('toastLeadName');
+        nameEl.textContent = leadName || 'New contact added';
+        
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        
+        // Play sound (optional - browser may block)
+        try {
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2JkYyHfXN1f4uUko2Df3+DjpWTjoWBhIuTk46FgYKIkZOOhYKDh4+RjoaCg4aMkI2JhYOGio6MiYWEhoqMi4mGhYaJi4qIhoaGiYqJh4aGh4iJiIeGhoeIiIeGhoeHh4eGhoaHh4eGhoaHh4eGhg==');
+            audio.volume = 0.3;
+            audio.play();
+        } catch(e) {}
+        
+        setTimeout(() => {
+            toast.classList.add('translate-y-20', 'opacity-0');
+            toast.classList.remove('translate-y-0', 'opacity-100');
+        }, 4000);
+    }
+    
+    // Animate stat update
+    function animateStat(elementId, newValue) {
+        const el = document.getElementById(elementId);
+        const oldValue = parseInt(el.textContent) || 0;
+        
+        if (newValue !== oldValue) {
+            el.style.transform = 'scale(1.1)';
+            el.style.color = '#4f46e5';
+            el.textContent = newValue;
+            
+            setTimeout(() => {
+                el.style.transform = 'scale(1)';
+                el.style.color = '';
+            }, 300);
+        }
+    }
+    
+    // Fetch and update dashboard stats
+    async function refreshDashboard() {
+        const refreshIcon = document.getElementById('refreshIcon');
+        refreshIcon.classList.add('animate-spin');
+        
+        try {
+            const response = await fetch('/api/dashboard/stats');
+            if (!response.ok) throw new Error('Failed to fetch');
+            
+            const data = await response.json();
+            
+            // Check for new leads
+            if (data.stats.total > lastLeadCount) {
+                const newLeads = data.stats.total - lastLeadCount;
+                const latestLead = data.leads[0];
+                showNewLeadToast(latestLead?.name || latestLead?.email || 'New lead');
+            }
+            lastLeadCount = data.stats.total;
+            
+            // Update stats with animation
+            animateStat('statTotal', data.stats.total);
+            animateStat('statMonth', data.stats.this_month);
+            animateStat('statWeek', data.stats.this_week);
+            animateStat('statToday', data.stats.today);
+            
+            // Update badges visibility
+            document.getElementById('monthBadge').style.display = data.stats.this_month > 0 ? 'flex' : 'none';
+            document.getElementById('todayPulse').style.display = data.stats.today > 0 ? 'flex' : 'none';
+            
+            // Update timestamp
+            lastUpdateTime = Date.now();
+            updateLastUpdatedText();
+            
+        } catch (error) {
+            console.error('Dashboard refresh error:', error);
+        } finally {
+            refreshIcon.classList.remove('animate-spin');
+        }
+    }
+    
+    // Start auto-refresh (every 30 seconds)
+    function startAutoRefresh() {
+        refreshInterval = setInterval(refreshDashboard, 30000);
+        // Also update the "last updated" text every 10 seconds
+        setInterval(updateLastUpdatedText, 10000);
+    }
+    
+    // Pause auto-refresh when tab is hidden (save resources)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            clearInterval(refreshInterval);
+        } else {
+            refreshDashboard(); // Refresh immediately when tab becomes visible
+            startAutoRefresh();
+        }
+    });
+    
+    // Initialize
+    startAutoRefresh();
 </script>
 {% endblock %}

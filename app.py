@@ -556,6 +556,28 @@ def dashboard():
         flash('Something went wrong loading your dashboard.', 'error')
         return redirect(url_for('home'))
 
+@app.route('/api/dashboard/stats')
+@venue_required
+def dashboard_stats():
+    """API endpoint for real-time dashboard updates"""
+    venue = get_current_venue()
+    if not venue:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    # Get recent leads (last 50)
+    leads = venue.leads.order_by(Lead.created_at.desc()).limit(50).all()
+    
+    return jsonify({
+        'stats': {
+            'total': venue.lead_count,
+            'this_month': venue.leads_this_month,
+            'this_week': venue.leads_this_week,
+            'today': venue.leads_today
+        },
+        'leads': [lead.to_dict() for lead in leads],
+        'updated_at': datetime.utcnow().isoformat()
+    })
+
 @app.route('/dashboard/settings', methods=['GET', 'POST'])
 @venue_required
 def settings():
