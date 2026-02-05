@@ -663,10 +663,19 @@ def debug_venue(email):
                 'email': venue.email,
                 'slug': venue.slug,
                 'status': venue.subscription_status,
-                'provider': venue.payment_provider,
+                'provider': getattr(venue, 'payment_provider', 'unknown'),
                 'created': venue.created_at.isoformat() if venue.created_at else None
             })
         return jsonify({'found': False, 'email_searched': email})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/migrate')
+def run_db_migration():
+    """Manually trigger database migration"""
+    try:
+        run_migrations()
+        return jsonify({'status': 'migrations_complete'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -682,11 +691,51 @@ def init_db():
 
 @app.before_request
 def ensure_db():
-    """Create tables if they don't exist"""
+    """Create tables and run migrations if needed"""
     # This runs on first request only
     if not hasattr(app, '_db_initialized'):
         db.create_all()
+        # Run migrations for missing columns
+        try:
+            run_migrations()
+        except Exception as e:
+            app.logger.error(f"Migration error: {e}")
         app._db_initialized = True
+
+def run_migrations():
+    """Add any missing columns to existing tables"""
+    from sqlalchemy import text
+    
+    migrations = [
+        # Add payment_provider column if missing
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='payment_provider') THEN
+                ALTER TABLE venues ADD COLUMN payment_provider VARCHAR(20) DEFAULT 'stripe';
+            END IF;
+        END $$;
+        """,
+        # Add paypal_subscription_id if missing
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='paypal_subscription_id') THEN
+                ALTER TABLE venues ADD COLUMN paypal_subscription_id VARCHAR(100);
+            END IF;
+        END $$;
+        """,
+    ]
+    
+    for migration in migrations:
+        try:
+            db.session.execute(text(migration))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.warning(f"Migration skipped or failed: {e}")
 
 if __name__ == '__main__':
     with app.app_context():
