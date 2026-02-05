@@ -622,9 +622,58 @@ def settings():
 # MENU UPLOAD & SERVING
 # =============================================================================
 
+# Extended allowed extensions (including HEIC which we'll convert)
+ALLOWED_MENU_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'webp', 'heic', 'heif'}
+
 def allowed_menu_file(filename):
     """Check if file extension is allowed"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_MENU_EXTENSIONS
+
+def detect_image_format(file_data):
+    """Detect actual image format from magic bytes"""
+    if len(file_data) < 12:
+        return None
+    
+    # Check magic bytes
+    if file_data[:4] == b'\x89PNG':
+        return 'png'
+    if file_data[:2] == b'\xff\xd8':
+        return 'jpeg'
+    if file_data[:4] == b'RIFF' and file_data[8:12] == b'WEBP':
+        return 'webp'
+    if file_data[:4] == b'%PDF':
+        return 'pdf'
+    # HEIC/HEIF detection (ftyp box with heic, mif1, etc.)
+    if file_data[4:8] == b'ftyp':
+        ftyp = file_data[8:12].decode('ascii', errors='ignore').lower()
+        if 'heic' in ftyp or 'heix' in ftyp or 'hevc' in ftyp or 'mif1' in ftyp:
+            return 'heic'
+    return None
+
+def convert_heic_to_jpeg(file_data):
+    """Convert HEIC image to JPEG bytes"""
+    try:
+        from pillow_heif import register_heif_opener
+        from PIL import Image
+        from io import BytesIO
+        
+        # Register HEIF opener with Pillow
+        register_heif_opener()
+        
+        # Open HEIC and convert to JPEG
+        img = Image.open(BytesIO(file_data))
+        
+        # Convert to RGB if necessary (HEIC might have alpha channel)
+        if img.mode in ('RGBA', 'P'):
+            img = img.convert('RGB')
+        
+        # Save as JPEG
+        output = BytesIO()
+        img.save(output, format='JPEG', quality=90)
+        return output.getvalue()
+    except Exception as e:
+        app.logger.error(f"HEIC conversion error: {e}")
+        return None
 
 @app.route('/dashboard/menu/upload', methods=['POST'])
 @venue_required
@@ -643,7 +692,7 @@ def upload_menu():
         return redirect(url_for('settings'))
     
     if not allowed_menu_file(file.filename):
-        flash('Invalid file type. Please upload PDF, PNG, JPG, or WEBP.', 'error')
+        flash('Invalid file type. Please upload PDF, PNG, JPG, WEBP, or HEIC.', 'error')
         return redirect(url_for('settings'))
     
     # Read file data
@@ -654,23 +703,45 @@ def upload_menu():
         flash(f'File too large. Maximum size is {MAX_MENU_SIZE // (1024*1024)}MB.', 'error')
         return redirect(url_for('settings'))
     
-    # Determine content type
-    ext = file.filename.rsplit('.', 1)[1].lower()
+    # Detect actual format (not just by extension)
+    actual_format = detect_image_format(file_data)
+    ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+    
+    # Handle HEIC conversion (common iPhone format)
+    if actual_format == 'heic' or ext in ('heic', 'heif'):
+        converted = convert_heic_to_jpeg(file_data)
+        if converted:
+            file_data = converted
+            actual_format = 'jpeg'
+            filename = file.filename.rsplit('.', 1)[0] + '.jpg'
+            flash('Menu uploaded! (Converted from HEIC to JPEG)', 'success')
+        else:
+            flash('Could not convert HEIC image. Please convert to JPG/PNG first.', 'error')
+            return redirect(url_for('settings'))
+    else:
+        filename = file.filename
+    
+    # Determine content type based on actual format
     content_types = {
         'pdf': 'application/pdf',
         'png': 'image/png',
-        'jpg': 'image/jpeg',
         'jpeg': 'image/jpeg',
+        'jpg': 'image/jpeg',
         'webp': 'image/webp'
     }
     
+    # Use detected format if available, otherwise fall back to extension
+    content_type = content_types.get(actual_format) or content_types.get(ext, 'application/octet-stream')
+    
     # Save to database
     venue.menu_data = file_data
-    venue.menu_filename = file.filename
-    venue.menu_content_type = content_types.get(ext, 'application/octet-stream')
+    venue.menu_filename = filename
+    venue.menu_content_type = content_type
     db.session.commit()
     
-    flash('Menu uploaded successfully!', 'success')
+    # Flash success if not already done (HEIC conversion already flashed)
+    if actual_format != 'heic' and ext not in ('heic', 'heif'):
+        flash('Menu uploaded successfully!', 'success')
     return redirect(url_for('settings'))
 
 @app.route('/dashboard/menu/delete', methods=['POST'])
@@ -712,7 +783,7 @@ def serve_menu(slug):
 # LOGO UPLOAD & SERVING
 # =============================================================================
 
-ALLOWED_LOGO_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'svg'}
+ALLOWED_LOGO_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'svg', 'heic', 'heif'}
 MAX_LOGO_SIZE = 2 * 1024 * 1024  # 2MB
 
 def allowed_logo_file(filename):
@@ -735,7 +806,7 @@ def upload_logo():
         return redirect(url_for('settings'))
     
     if not allowed_logo_file(file.filename):
-        flash('Invalid file type. Please upload PNG, JPG, WEBP, or SVG.', 'error')
+        flash('Invalid file type. Please upload PNG, JPG, WEBP, SVG, or HEIC.', 'error')
         return redirect(url_for('settings'))
     
     file_data = file.read()
@@ -744,7 +815,22 @@ def upload_logo():
         flash(f'File too large. Maximum size is {MAX_LOGO_SIZE // (1024*1024)}MB.', 'error')
         return redirect(url_for('settings'))
     
-    ext = file.filename.rsplit('.', 1)[1].lower()
+    ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+    
+    # Detect actual format and handle HEIC
+    actual_format = detect_image_format(file_data)
+    if actual_format == 'heic' or ext in ('heic', 'heif'):
+        converted = convert_heic_to_jpeg(file_data)
+        if converted:
+            file_data = converted
+            actual_format = 'jpeg'
+            filename = file.filename.rsplit('.', 1)[0] + '.jpg'
+        else:
+            flash('Could not convert HEIC image. Please convert to JPG/PNG first.', 'error')
+            return redirect(url_for('settings'))
+    else:
+        filename = file.filename
+    
     content_types = {
         'png': 'image/png',
         'jpg': 'image/jpeg',
@@ -753,9 +839,12 @@ def upload_logo():
         'svg': 'image/svg+xml'
     }
     
+    # Use detected format for content type if available
+    content_type = content_types.get(actual_format) or content_types.get(ext, 'image/png')
+    
     venue.logo_data = file_data
-    venue.logo_filename = file.filename
-    venue.logo_content_type = content_types.get(ext, 'image/png')
+    venue.logo_filename = filename
+    venue.logo_content_type = content_type
     db.session.commit()
     
     flash('Logo uploaded successfully!', 'success')
