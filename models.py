@@ -29,6 +29,11 @@ class Venue(db.Model):
     logo_url = db.Column(db.String(500))
     primary_color = db.Column(db.String(7), default="#6366f1")  # Hex color
     
+    # Menu storage (stored in DB for simplicity - migrate to R2 at scale)
+    menu_data = db.Column(db.LargeBinary)  # Binary file data
+    menu_filename = db.Column(db.String(255))  # Original filename
+    menu_content_type = db.Column(db.String(100))  # MIME type (application/pdf, image/png, etc.)
+    
     # Billing (Stripe or PayPal)
     payment_provider = db.Column(db.String(20), default='stripe')  # stripe or paypal
     stripe_customer_id = db.Column(db.String(100))
@@ -61,6 +66,16 @@ class Venue(db.Model):
         from datetime import datetime
         start_of_month = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         return self.leads.filter(Lead.created_at >= start_of_month).count()
+    
+    @property
+    def has_menu(self):
+        """Check if venue has a menu uploaded"""
+        return self.menu_data is not None and len(self.menu_data) > 0
+    
+    @property
+    def menu_url(self):
+        """URL to view the menu"""
+        return f"/menu/{self.slug}" if self.has_menu else None
 
 
 class Lead(db.Model):

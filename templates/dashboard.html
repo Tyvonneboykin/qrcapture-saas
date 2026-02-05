@@ -15,6 +15,17 @@
 </nav>
 
 <div class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="mb-4 p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% elif category == 'info' %}bg-blue-100 text-blue-700{% else %}bg-green-100 text-green-700{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
     <!-- Stats Row -->
     <div class="grid md:grid-cols-4 gap-4 mb-8">
         <div class="bg-white rounded-xl shadow p-6">
@@ -40,6 +51,22 @@
         </div>
     </div>
     
+    <!-- Menu Status Alert -->
+    {% if not venue.has_menu %}
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">📋</span>
+            <div>
+                <p class="font-medium text-amber-800">No menu uploaded yet</p>
+                <p class="text-sm text-amber-600">Upload your menu so customers can view it after signing up.</p>
+            </div>
+        </div>
+        <a href="/dashboard/settings" class="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 whitespace-nowrap">
+            Upload Menu
+        </a>
+    </div>
+    {% endif %}
+    
     <!-- Actions -->
     <div class="flex flex-wrap gap-4 mb-8">
         <a href="/dashboard/settings" class="bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">
@@ -51,6 +78,11 @@
         <a href="/dashboard/leads/export" class="bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">
             📥 Export CSV
         </a>
+        {% if venue.has_menu %}
+        <a href="{{ base_url }}/menu/{{ venue.slug }}" target="_blank" class="bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50">
+            📋 View Menu
+        </a>
+        {% endif %}
         <a href="{{ base_url }}{{ venue.capture_url }}" target="_blank" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
             👁️ Preview Capture Page
         </a>

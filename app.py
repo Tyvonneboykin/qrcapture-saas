@@ -4,10 +4,15 @@
 import os
 import stripe
 import requests
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, flash, Response, send_file
 from flask_mail import Mail, Message
 from functools import wraps
 from datetime import datetime
+from io import BytesIO
+
+# Menu upload config
+ALLOWED_MENU_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'webp'}
+MAX_MENU_SIZE = 10 * 1024 * 1024  # 10MB
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-change-me')
@@ -565,16 +570,114 @@ def settings():
         db.session.commit()
         flash('Settings saved!', 'success')
     
-    return render_template('settings.html', venue=venue)
+    return render_template('settings.html', venue=venue, base_url=BASE_URL)
+
+# =============================================================================
+# MENU UPLOAD & SERVING
+# =============================================================================
+
+def allowed_menu_file(filename):
+    """Check if file extension is allowed"""
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_MENU_EXTENSIONS
+
+@app.route('/dashboard/menu/upload', methods=['POST'])
+@venue_required
+def upload_menu():
+    """Handle menu file upload"""
+    venue = get_current_venue()
+    
+    if 'menu' not in request.files:
+        flash('No file selected', 'error')
+        return redirect(url_for('settings'))
+    
+    file = request.files['menu']
+    
+    if file.filename == '':
+        flash('No file selected', 'error')
+        return redirect(url_for('settings'))
+    
+    if not allowed_menu_file(file.filename):
+        flash('Invalid file type. Please upload PDF, PNG, JPG, or WEBP.', 'error')
+        return redirect(url_for('settings'))
+    
+    # Read file data
+    file_data = file.read()
+    
+    # Check file size
+    if len(file_data) > MAX_MENU_SIZE:
+        flash(f'File too large. Maximum size is {MAX_MENU_SIZE // (1024*1024)}MB.', 'error')
+        return redirect(url_for('settings'))
+    
+    # Determine content type
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    content_types = {
+        'pdf': 'application/pdf',
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'webp': 'image/webp'
+    }
+    
+    # Save to database
+    venue.menu_data = file_data
+    venue.menu_filename = file.filename
+    venue.menu_content_type = content_types.get(ext, 'application/octet-stream')
+    db.session.commit()
+    
+    flash('Menu uploaded successfully!', 'success')
+    return redirect(url_for('settings'))
+
+@app.route('/dashboard/menu/delete', methods=['POST'])
+@venue_required
+def delete_menu():
+    """Delete uploaded menu"""
+    venue = get_current_venue()
+    
+    venue.menu_data = None
+    venue.menu_filename = None
+    venue.menu_content_type = None
+    db.session.commit()
+    
+    flash('Menu deleted.', 'success')
+    return redirect(url_for('settings'))
+
+@app.route('/menu/<slug>')
+def serve_menu(slug):
+    """Serve menu file for a venue"""
+    venue = Venue.query.filter_by(slug=slug).first_or_404()
+    
+    if not venue.has_menu:
+        return "No menu available", 404
+    
+    # Check subscription is active (optional - could allow menu viewing even if expired)
+    # if venue.subscription_status not in ('active', 'trialing'):
+    #     return "Menu unavailable", 402
+    
+    return Response(
+        venue.menu_data,
+        mimetype=venue.menu_content_type,
+        headers={
+            'Content-Disposition': f'inline; filename="{venue.menu_filename}"',
+            'Cache-Control': 'public, max-age=3600'  # Cache for 1 hour
+        }
+    )
 
 @app.route('/dashboard/billing')
 @venue_required
 def billing():
-    """Redirect to Stripe billing portal"""
+    """Redirect to appropriate billing portal based on payment provider"""
     venue = get_current_venue()
     
+    # Check payment provider
+    if venue.payment_provider == 'paypal' or venue.paypal_subscription_id:
+        # PayPal users manage subscription through PayPal
+        # Link to PayPal subscription management
+        paypal_manage_url = "https://www.paypal.com/myaccount/autopay/"
+        flash('You signed up with PayPal. Manage your subscription on PayPal.', 'info')
+        return redirect(paypal_manage_url)
+    
     if not venue.stripe_customer_id:
-        flash('No billing information found', 'error')
+        flash('No billing information found. Please contact support.', 'error')
         return redirect(url_for('dashboard'))
     
     try:
@@ -585,7 +688,7 @@ def billing():
         return redirect(portal.url)
     except Exception as e:
         app.logger.error(f"Stripe portal error: {e}")
-        flash('Could not open billing portal', 'error')
+        flash('Could not open billing portal. Please try again later.', 'error')
         return redirect(url_for('dashboard'))
 
 @app.route('/dashboard/leads/export')
@@ -806,6 +909,36 @@ def run_migrations():
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                           WHERE table_name='venues' AND column_name='paypal_subscription_id') THEN
                 ALTER TABLE venues ADD COLUMN paypal_subscription_id VARCHAR(100);
+            END IF;
+        END $$;
+        """,
+        # Add menu_data column (BYTEA for binary storage)
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='menu_data') THEN
+                ALTER TABLE venues ADD COLUMN menu_data BYTEA;
+            END IF;
+        END $$;
+        """,
+        # Add menu_filename column
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='menu_filename') THEN
+                ALTER TABLE venues ADD COLUMN menu_filename VARCHAR(255);
+            END IF;
+        END $$;
+        """,
+        # Add menu_content_type column
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='menu_content_type') THEN
+                ALTER TABLE venues ADD COLUMN menu_content_type VARCHAR(100);
             END IF;
         END $$;
         """,

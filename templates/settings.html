@@ -65,5 +65,52 @@
             </button>
         </div>
     </form>
+    
+    <!-- Menu Upload Section -->
+    <div class="bg-white shadow rounded-xl p-6 mt-6">
+        <h2 class="text-lg font-semibold mb-4">📋 Menu</h2>
+        
+        {% if venue.has_menu %}
+        <!-- Current Menu -->
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    {% if venue.menu_content_type == 'application/pdf' %}
+                    <span class="text-3xl">📄</span>
+                    {% else %}
+                    <span class="text-3xl">🖼️</span>
+                    {% endif %}
+                    <div>
+                        <p class="font-medium">{{ venue.menu_filename }}</p>
+                        <p class="text-sm text-gray-500">
+                            <a href="{{ base_url }}/menu/{{ venue.slug }}" target="_blank" class="text-indigo-600 hover:underline">
+                                View Menu →
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                <form action="{{ url_for('delete_menu') }}" method="POST" onsubmit="return confirm('Delete this menu?')">
+                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <p class="text-sm text-gray-500 mb-4">Upload a new file to replace the current menu.</p>
+        {% else %}
+        <p class="text-gray-600 mb-4">Upload your menu so customers can view it after signing up. Supported formats: PDF, PNG, JPG, WEBP (max 10MB).</p>
+        {% endif %}
+        
+        <form action="{{ url_for('upload_menu') }}" method="POST" enctype="multipart/form-data">
+            <div class="flex items-center gap-4">
+                <input type="file" name="menu" accept=".pdf,.png,.jpg,.jpeg,.webp"
+                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 whitespace-nowrap">
+                    Upload Menu
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

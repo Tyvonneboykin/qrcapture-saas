@@ -73,7 +73,14 @@
         <div class="bg-white rounded-2xl shadow-2xl p-8 text-center hidden" id="successCard">
             <div class="text-6xl mb-4">🎉</div>
             <h2 class="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
-            <p class="text-gray-600" id="thankYouMsg">{{ venue.thank_you_message }}</p>
+            <p class="text-gray-600 mb-6" id="thankYouMsg">{{ venue.thank_you_message }}</p>
+            
+            {% if venue.has_menu %}
+            <a href="{{ venue.menu_url }}" target="_blank" id="menuBtn"
+               class="inline-block brand-bg text-white py-4 px-8 rounded-xl font-semibold text-lg hover:opacity-90 transition-opacity">
+                📋 View Our Menu
+            </a>
+            {% endif %}
         </div>
         
         <!-- Powered by -->
