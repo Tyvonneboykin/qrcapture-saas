@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" fill="none">
+  <defs>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+  
+  <!-- Browser Window -->
+  <rect x="20" y="20" width="760" height="460" rx="12" fill="#1e1b4b"/>
+  <rect x="20" y="20" width="760" height="35" rx="12" fill="#312e81"/>
+  <rect x="20" y="43" width="760" height="12" fill="#312e81"/>
+  
+  <!-- Browser Buttons -->
+  <circle cx="42" cy="37" r="6" fill="#ef4444"/>
+  <circle cx="62" cy="37" r="6" fill="#eab308"/>
+  <circle cx="82" cy="37" r="6" fill="#22c55e"/>
+  
+  <!-- URL Bar -->
+  <rect x="110" y="28" width="400" height="20" rx="4" fill="#1e1b4b"/>
+  <text x="125" y="42" font-family="system-ui" font-size="10" fill="#94a3b8">qrcapture.onrender.com/dashboard</text>
+  
+  <!-- Dashboard Content -->
+  <rect x="30" y="65" width="740" height="405" fill="#f8fafc"/>
+  
+  <!-- Sidebar -->
+  <rect x="30" y="65" width="180" height="405" fill="#ffffff"/>
+  <rect x="45" y="85" width="150" height="36" rx="6" fill="#6366f1"/>
+  <text x="70" y="108" font-family="system-ui" font-size="12" font-weight="500" fill="white">Dashboard</text>
+  
+  <text x="70" y="148" font-family="system-ui" font-size="12" fill="#64748b">Settings</text>
+  <text x="70" y="178" font-family="system-ui" font-size="12" fill="#64748b">Billing</text>
+  <text x="70" y="208" font-family="system-ui" font-size="12" fill="#64748b">Export</text>
+  
+  <!-- Main Content Area -->
+  <!-- Stats Cards -->
+  <g transform="translate(230, 85)">
+    <rect x="0" y="0" width="160" height="80" rx="8" fill="white" filter="url(#cardShadow)"/>
+    <text x="20" y="35" font-family="system-ui" font-size="28" font-weight="700" fill="#6366f1">247</text>
+    <text x="20" y="55" font-family="system-ui" font-size="11" fill="#64748b">Total Leads</text>
+  </g>
+  
+  <g transform="translate(410, 85)">
+    <rect x="0" y="0" width="160" height="80" rx="8" fill="white" filter="url(#cardShadow)"/>
+    <text x="20" y="35" font-family="system-ui" font-size="28" font-weight="700" fill="#22c55e">52</text>
+    <text x="20" y="55" font-family="system-ui" font-size="11" fill="#64748b">This Month</text>
+  </g>
+  
+  <g transform="translate(590, 85)">
+    <rect x="0" y="0" width="160" height="80" rx="8" fill="white" filter="url(#cardShadow)"/>
+    <text x="20" y="35" font-family="system-ui" font-size="14" font-weight="600" fill="#1e1b4b">Active</text>
+    <text x="20" y="55" font-family="system-ui" font-size="11" fill="#64748b">Subscription</text>
+  </g>
+  
+  <!-- QR Code Card -->
+  <g transform="translate(590, 185)">
+    <rect x="0" y="0" width="160" height="180" rx="8" fill="white" filter="url(#cardShadow)"/>
+    <text x="15" y="25" font-family="system-ui" font-size="12" font-weight="600" fill="#1e1b4b">Your QR Code</text>
+    <!-- Mini QR -->
+    <rect x="30" y="40" width="100" height="100" rx="4" fill="#f1f5f9"/>
+    <rect x="45" y="55" width="18" height="18" fill="#1e1b4b"/>
+    <rect x="70" y="55" width="18" height="18" fill="#1e1b4b"/>
+    <rect x="95" y="55" width="18" height="18" fill="#1e1b4b"/>
+    <rect x="45" y="80" width="18" height="18" fill="#1e1b4b"/>
+    <rect x="70" y="80" width="18" height="18" fill="#1e1b4b"/>
+    <rect x="95" y="80" width="18" height="18" fill="#1e1b4b"/>
+    <rect x="45" y="105" width="18" height="18" fill="#1e1b4b"/>
+    <rect x="70" y="105" width="18" height="18" fill="#1e1b4b"/>
+    <rect x="95" y="105" width="18" height="18" fill="#1e1b4b"/>
+    <rect x="15" y="150" width="130" height="24" rx="4" fill="#6366f1"/>
+    <text x="80" y="166" text-anchor="middle" font-family="system-ui" font-size="10" fill="white">Download</text>
+  </g>
+  
+  <!-- Leads Table -->
+  <g transform="translate(230, 185)">
+    <rect x="0" y="0" width="340" height="260" rx="8" fill="white" filter="url(#cardShadow)"/>
+    <text x="20" y="28" font-family="system-ui" font-size="14" font-weight="600" fill="#1e1b4b">Recent Leads</text>
+    
+    <!-- Table Header -->
+    <rect x="0" y="45" width="340" height="30" fill="#f8fafc"/>
+    <text x="20" y="65" font-family="system-ui" font-size="10" font-weight="500" fill="#64748b">NAME</text>
+    <text x="120" y="65" font-family="system-ui" font-size="10" font-weight="500" fill="#64748b">EMAIL</text>
+    <text x="260" y="65" font-family="system-ui" font-size="10" font-weight="500" fill="#64748b">DATE</text>
+    
+    <!-- Table Rows -->
+    <line x1="0" y1="75" x2="340" y2="75" stroke="#e2e8f0"/>
+    <text x="20" y="100" font-family="system-ui" font-size="11" fill="#1e1b4b">Sarah Johnson</text>
+    <text x="120" y="100" font-family="system-ui" font-size="11" fill="#6366f1">sarah@email.com</text>
+    <text x="260" y="100" font-family="system-ui" font-size="11" fill="#64748b">Today</text>
+    
+    <line x1="0" y1="115" x2="340" y2="115" stroke="#e2e8f0"/>
+    <text x="20" y="140" font-family="system-ui" font-size="11" fill="#1e1b4b">Mike Chen</text>
+    <text x="120" y="140" font-family="system-ui" font-size="11" fill="#6366f1">mike@email.com</text>
+    <text x="260" y="140" font-family="system-ui" font-size="11" fill="#64748b">Today</text>
+    
+    <line x1="0" y1="155" x2="340" y2="155" stroke="#e2e8f0"/>
+    <text x="20" y="180" font-family="system-ui" font-size="11" fill="#1e1b4b">Emma Wilson</text>
+    <text x="120" y="180" font-family="system-ui" font-size="11" fill="#6366f1">emma@email.com</text>
+    <text x="260" y="180" font-family="system-ui" font-size="11" fill="#64748b">Yesterday</text>
+    
+    <line x1="0" y1="195" x2="340" y2="195" stroke="#e2e8f0"/>
+    <text x="20" y="220" font-family="system-ui" font-size="11" fill="#1e1b4b">James Brown</text>
+    <text x="120" y="220" font-family="system-ui" font-size="11" fill="#6366f1">james@email.com</text>
+    <text x="260" y="220" font-family="system-ui" font-size="11" fill="#64748b">Yesterday</text>
+  </g>
+</svg>

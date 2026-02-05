@@ -91,6 +91,21 @@ def pricing():
     """Pricing page"""
     return render_template('pricing.html', stripe_key=STRIPE_PUBLISHABLE_KEY)
 
+@app.route('/privacy')
+def privacy():
+    """Privacy Policy"""
+    return render_template('privacy.html')
+
+@app.route('/terms')
+def terms():
+    """Terms of Service"""
+    return render_template('terms.html')
+
+@app.route('/about')
+def about():
+    """About page"""
+    return render_template('about.html')
+
 # =============================================================================
 # LEAD CAPTURE (The Core Product)
 # =============================================================================

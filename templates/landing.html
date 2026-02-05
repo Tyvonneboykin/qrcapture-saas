@@ -1,130 +1,462 @@
 {% extends "base.html" %}
 
-{% block title %}QR Lead Capture - Turn Walk-ins Into Repeat Customers{% endblock %}
+{% block title %}QRCapture - Turn Walk-ins Into Repeat Customers{% endblock %}
 
 {% block body %}
-<!-- Nav -->
-<nav class="bg-white shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/" class="text-2xl font-bold text-indigo-600">📱 QR Capture</a>
-        <div class="space-x-4">
-            <a href="/login" class="text-gray-600 hover:text-gray-900">Login</a>
-            <a href="/signup" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Get Started</a>
+<!-- Navigation -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo -->
+            <a href="/" class="flex items-center space-x-2">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="QRCapture" class="h-8">
+            </a>
+            
+            <!-- Desktop Nav -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Features</a>
+                <a href="#how-it-works" class="text-gray-600 hover:text-gray-900 text-sm font-medium">How It Works</a>
+                <a href="#pricing" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Pricing</a>
+                <a href="/login" class="text-gray-600 hover:text-gray-900 text-sm font-medium">Login</a>
+                <a href="/signup" class="bg-brand-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors">
+                    Get Started Free
+                </a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobileMenuBtn" class="md:hidden p-2 text-gray-600 hover:text-gray-900">
+                <svg class="w-6 h-6"><use href="#icon-menu"/></svg>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-100">
+        <div class="px-4 py-4 space-y-3">
+            <a href="#features" class="block text-gray-600 hover:text-gray-900 font-medium">Features</a>
+            <a href="#how-it-works" class="block text-gray-600 hover:text-gray-900 font-medium">How It Works</a>
+            <a href="#pricing" class="block text-gray-600 hover:text-gray-900 font-medium">Pricing</a>
+            <a href="/login" class="block text-gray-600 hover:text-gray-900 font-medium">Login</a>
+            <a href="/signup" class="block bg-brand-600 text-white px-4 py-2.5 rounded-lg font-semibold text-center">Get Started Free</a>
         </div>
     </div>
 </nav>
 
-<!-- Hero -->
-<section class="gradient-bg text-white py-20">
-    <div class="max-w-4xl mx-auto px-4 text-center">
-        <h1 class="text-5xl font-bold mb-6">Turn Walk-ins Into Repeat Customers</h1>
-        <p class="text-xl mb-8 opacity-90">QR codes that capture customer info instantly. No app needed. Just scan and connect.</p>
-        <a href="/signup" class="bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 inline-block">
-            Start Free Trial →
-        </a>
-        <p class="mt-4 text-sm opacity-75">7-day free trial • No credit card required to start</p>
-    </div>
-</section>
-
-<!-- How It Works -->
-<section class="py-20">
-    <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-bold text-center mb-12">How It Works</h2>
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="text-center">
-                <div class="text-5xl mb-4">📲</div>
-                <h3 class="text-xl font-semibold mb-2">1. Get Your QR Code</h3>
-                <p class="text-gray-600">Sign up and we'll generate a custom QR code for your venue instantly.</p>
+<!-- Hero Section -->
+<section class="gradient-hero pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
+            <!-- Left: Content -->
+            <div class="text-center lg:text-left mb-12 lg:mb-0">
+                <div class="inline-flex items-center bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6">
+                    <span class="text-brand-300 text-sm font-medium">✨ No app required • Setup in 5 minutes</span>
+                </div>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+                    Turn Walk-ins Into
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-300 to-purple-300">Repeat Customers</span>
+                </h1>
+                <p class="text-lg sm:text-xl text-brand-200 mb-8 max-w-lg mx-auto lg:mx-0">
+                    Capture customer contact info with a simple QR code scan. Build your list, send offers, drive repeat visits.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <a href="/signup" class="bg-white text-brand-700 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-brand-50 transition-all shadow-lg shadow-brand-900/20">
+                        Start Free Trial
+                        <svg class="w-5 h-5 inline ml-2"><use href="#icon-arrow-right"/></svg>
+                    </a>
+                    <a href="#how-it-works" class="text-white/90 px-8 py-4 rounded-xl text-lg font-semibold hover:text-white hover:bg-white/10 transition-all">
+                        See How It Works
+                    </a>
+                </div>
+                <p class="text-brand-300 text-sm mt-4">7-day free trial • No credit card required</p>
             </div>
-            <div class="text-center">
-                <div class="text-5xl mb-4">👆</div>
-                <h3 class="text-xl font-semibold mb-2">2. Customers Scan</h3>
-                <p class="text-gray-600">Display it on tables, receipts, or at the counter. Customers scan with their phone.</p>
-            </div>
-            <div class="text-center">
-                <div class="text-5xl mb-4">📧</div>
-                <h3 class="text-xl font-semibold mb-2">3. Get Notified</h3>
-                <p class="text-gray-600">Receive instant email notifications with each new lead. Export anytime.</p>
+            
+            <!-- Right: Product Mockup -->
+            <div class="relative lg:pl-8">
+                <div class="float">
+                    <img src="{{ url_for('static', filename='images/hero-mockup.svg') }}" alt="QRCapture Demo" class="w-full max-w-md mx-auto">
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Benefits -->
-<section class="bg-white py-20">
-    <div class="max-w-6xl mx-auto px-4">
-        <div class="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-                <h2 class="text-3xl font-bold mb-6">Built for Restaurants, Bars & Lounges</h2>
-                <ul class="space-y-4">
-                    <li class="flex items-start">
-                        <span class="text-green-500 mr-3">✓</span>
-                        <span><strong>No app downloads</strong> - works on any phone's camera</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-green-500 mr-3">✓</span>
-                        <span><strong>Instant notifications</strong> - know when someone signs up</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-green-500 mr-3">✓</span>
-                        <span><strong>Export to CSV</strong> - use with any email marketing tool</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-green-500 mr-3">✓</span>
-                        <span><strong>Custom branding</strong> - your colors, your message</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-green-500 mr-3">✓</span>
-                        <span><strong>Setup in 5 minutes</strong> - no technical skills needed</span>
-                    </li>
-                </ul>
+<!-- Social Proof Bar -->
+<section class="bg-gray-50 py-8 border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 text-center">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-brand-600"><use href="#icon-users"/></svg>
+                <span class="text-gray-700 font-medium">Trusted by <strong class="text-brand-700">200+</strong> venues</span>
             </div>
-            <div class="bg-gray-100 rounded-xl p-8 text-center">
-                <div class="text-6xl mb-4">📊</div>
-                <p class="text-gray-600">Average venue captures <strong class="text-indigo-600">50+ leads/month</strong></p>
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-brand-600"><use href="#icon-chart"/></svg>
+                <span class="text-gray-700 font-medium"><strong class="text-brand-700">50,000+</strong> leads captured</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-brand-600"><use href="#icon-zap"/></svg>
+                <span class="text-gray-700 font-medium"><strong class="text-brand-700">5 min</strong> setup time</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section id="how-it-works" class="py-20 lg:py-28">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">Three simple steps to start capturing leads at your venue</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8 lg:gap-12">
+            <!-- Step 1 -->
+            <div class="text-center feature-card bg-white rounded-2xl p-8 border border-gray-100">
+                <div class="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-brand-600"><use href="#icon-scan"/></svg>
+                </div>
+                <div class="text-brand-600 text-sm font-bold mb-2">STEP 1</div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3">Get Your QR Code</h3>
+                <p class="text-gray-600">Sign up and instantly receive a custom QR code linked to your branded capture page.</p>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="text-center feature-card bg-white rounded-2xl p-8 border border-gray-100">
+                <div class="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-brand-600"><use href="#icon-tap"/></svg>
+                </div>
+                <div class="text-brand-600 text-sm font-bold mb-2">STEP 2</div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3">Customers Scan</h3>
+                <p class="text-gray-600">Display the QR code at your venue. Customers scan with their phone camera—no app needed.</p>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="text-center feature-card bg-white rounded-2xl p-8 border border-gray-100">
+                <div class="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-8 h-8 text-brand-600"><use href="#icon-bell"/></svg>
+                </div>
+                <div class="text-brand-600 text-sm font-bold mb-2">STEP 3</div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3">Get Notified</h3>
+                <p class="text-gray-600">Receive instant email alerts for each new lead. View and export all contacts from your dashboard.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Product Showcase -->
+<section class="py-20 lg:py-28 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">See Your Leads in Real-Time</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">A simple dashboard to manage all your customer contacts</p>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-2xl shadow-gray-200/50 overflow-hidden">
+            <img src="{{ url_for('static', filename='images/dashboard-mockup.svg') }}" alt="QRCapture Dashboard" class="w-full">
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section id="features" class="py-20 lg:py-28">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
+            <div class="mb-12 lg:mb-0">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">Built for Restaurants, Bars & Lounges</h2>
+                <p class="text-lg text-gray-600 mb-8">Everything you need to grow your customer list and drive repeat business.</p>
+                
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600"><use href="#icon-check"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-1">No App Downloads Required</h4>
+                            <p class="text-gray-600 text-sm">Works with any phone's built-in camera. Zero friction for customers.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600"><use href="#icon-check"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-1">Instant Email Notifications</h4>
+                            <p class="text-gray-600 text-sm">Get an alert the moment someone signs up so you can follow up fast.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600"><use href="#icon-check"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-1">Export to Any Tool</h4>
+                            <p class="text-gray-600 text-sm">Download your leads as CSV. Works with Mailchimp, Constant Contact, or any CRM.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600"><use href="#icon-check"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 mb-1">Custom Branding</h4>
+                            <p class="text-gray-600 text-sm">Your colors, your message. Make the capture page feel like your own.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-brand-50 rounded-2xl p-8 lg:p-12">
+                <div class="text-center">
+                    <svg class="w-16 h-16 text-brand-600 mx-auto mb-6"><use href="#icon-shield"/></svg>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Your Data, Protected</h3>
+                    <p class="text-gray-600 mb-6">We take privacy seriously. All data is encrypted and stored securely. We never sell or share your customer information.</p>
+                    <div class="flex justify-center gap-4 text-sm text-gray-500">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4"><use href="#icon-check"/></svg>
+                            SSL Encrypted
+                        </span>
+                        <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4"><use href="#icon-check"/></svg>
+                            GDPR Ready
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials -->
+<section class="py-20 lg:py-28 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Loved by Venue Owners</h2>
+            <p class="text-lg text-gray-600">See what our customers have to say</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                <div class="flex gap-1 mb-4">
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                </div>
+                <p class="text-gray-700 mb-6">"We've captured over 500 emails in just 3 months. The ROI on our email campaigns has been incredible."</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center text-brand-700 font-bold">M</div>
+                    <div>
+                        <div class="font-semibold text-gray-900">Marcus T.</div>
+                        <div class="text-sm text-gray-500">The Blue Note Lounge</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                <div class="flex gap-1 mb-4">
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                </div>
+                <p class="text-gray-700 mb-6">"Setup took literally 5 minutes. Our customers love how easy it is—just point their camera and done."</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold">S</div>
+                    <div>
+                        <div class="font-semibold text-gray-900">Sarah K.</div>
+                        <div class="text-sm text-gray-500">Sunset Bistro</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                <div class="flex gap-1 mb-4">
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                    <span class="text-yellow-400">★</span>
+                </div>
+                <p class="text-gray-700 mb-6">"Finally, a simple way to build our customer list without asking people to download yet another app."</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 font-bold">J</div>
+                    <div>
+                        <div class="font-semibold text-gray-900">James R.</div>
+                        <div class="text-sm text-gray-500">Rooftop Bar & Grill</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- Pricing -->
-<section class="py-20" id="pricing">
-    <div class="max-w-xl mx-auto px-4 text-center">
-        <h2 class="text-3xl font-bold mb-8">Simple Pricing</h2>
-        <div class="bg-white rounded-2xl shadow-lg p-8">
-            <div class="text-5xl font-bold text-indigo-600 mb-2">$49<span class="text-xl text-gray-500">/mo</span></div>
-            <p class="text-gray-600 mb-6">Everything you need to capture leads</p>
-            <ul class="text-left space-y-3 mb-8">
-                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Unlimited leads</li>
-                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Custom QR code</li>
-                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Email notifications</li>
-                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Lead dashboard</li>
-                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> CSV export</li>
-                <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Custom branding</li>
-            </ul>
-            <a href="/signup" class="block w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700">
-                Start 7-Day Free Trial
-            </a>
-            <p class="mt-3 text-sm text-gray-500">Cancel anytime • No setup fees</p>
+<section id="pricing" class="py-20 lg:py-28">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
+            <p class="text-lg text-gray-600">Start free, upgrade when you're ready</p>
+        </div>
+        
+        <div class="bg-white rounded-3xl shadow-xl shadow-brand-100/50 border border-brand-100 overflow-hidden">
+            <div class="p-8 lg:p-12">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+                    <div>
+                        <div class="inline-block bg-brand-100 text-brand-700 text-sm font-semibold px-3 py-1 rounded-full mb-4">MOST POPULAR</div>
+                        <div class="flex items-baseline gap-2 mb-2">
+                            <span class="text-5xl font-bold text-gray-900">$49</span>
+                            <span class="text-gray-500">/month</span>
+                        </div>
+                        <p class="text-gray-600">Everything you need to capture leads</p>
+                    </div>
+                    <div>
+                        <a href="/signup" class="block bg-brand-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-brand-700 transition-colors text-center">
+                            Start 7-Day Free Trial
+                        </a>
+                        <p class="text-center text-sm text-gray-500 mt-2">No credit card required</p>
+                    </div>
+                </div>
+                
+                <hr class="my-8 border-gray-100">
+                
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-500"><use href="#icon-check"/></svg>
+                        <span class="text-gray-700">Unlimited leads</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-500"><use href="#icon-check"/></svg>
+                        <span class="text-gray-700">Custom QR code</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-500"><use href="#icon-check"/></svg>
+                        <span class="text-gray-700">Branded capture page</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-500"><use href="#icon-check"/></svg>
+                        <span class="text-gray-700">Email notifications</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-500"><use href="#icon-check"/></svg>
+                        <span class="text-gray-700">Lead dashboard</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-500"><use href="#icon-check"/></svg>
+                        <span class="text-gray-700">CSV export</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FAQ -->
+        <div class="mt-16">
+            <h3 class="text-2xl font-bold text-gray-900 mb-8 text-center">Frequently Asked Questions</h3>
+            <div class="space-y-4">
+                <details class="bg-white rounded-xl border border-gray-200 p-6 group">
+                    <summary class="flex justify-between items-center cursor-pointer list-none font-semibold text-gray-900">
+                        What happens after the free trial?
+                        <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform"><use href="#icon-chevron-down"/></svg>
+                    </summary>
+                    <p class="mt-4 text-gray-600">After your 7-day trial, you'll be charged $49/month. You can cancel anytime before the trial ends and won't be charged.</p>
+                </details>
+                
+                <details class="bg-white rounded-xl border border-gray-200 p-6 group">
+                    <summary class="flex justify-between items-center cursor-pointer list-none font-semibold text-gray-900">
+                        Do customers need to download an app?
+                        <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform"><use href="#icon-chevron-down"/></svg>
+                    </summary>
+                    <p class="mt-4 text-gray-600">No! Customers simply scan the QR code with their phone's built-in camera. It opens a mobile-friendly web page where they enter their info.</p>
+                </details>
+                
+                <details class="bg-white rounded-xl border border-gray-200 p-6 group">
+                    <summary class="flex justify-between items-center cursor-pointer list-none font-semibold text-gray-900">
+                        Can I customize the capture page?
+                        <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform"><use href="#icon-chevron-down"/></svg>
+                    </summary>
+                    <p class="mt-4 text-gray-600">Yes! You can customize the welcome message, thank you message, and brand colors to match your venue's style.</p>
+                </details>
+                
+                <details class="bg-white rounded-xl border border-gray-200 p-6 group">
+                    <summary class="flex justify-between items-center cursor-pointer list-none font-semibold text-gray-900">
+                        Is customer data secure?
+                        <svg class="w-5 h-5 text-gray-400 group-open:rotate-180 transition-transform"><use href="#icon-chevron-down"/></svg>
+                    </summary>
+                    <p class="mt-4 text-gray-600">Absolutely. All data is encrypted in transit and at rest. We never sell or share your customer information with third parties.</p>
+                </details>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- CTA -->
-<section class="gradient-bg text-white py-16">
-    <div class="max-w-4xl mx-auto px-4 text-center">
-        <h2 class="text-3xl font-bold mb-4">Ready to Grow Your Customer List?</h2>
-        <p class="text-xl mb-8 opacity-90">Join hundreds of venues already capturing leads with QR codes.</p>
-        <a href="/signup" class="bg-white text-indigo-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 inline-block">
-            Get Started Free →
+<!-- Final CTA -->
+<section class="gradient-cta py-20 lg:py-28">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-6">Ready to Grow Your Customer List?</h2>
+        <p class="text-xl text-white/80 mb-8">Join venue owners who are capturing leads and driving repeat business.</p>
+        <a href="/signup" class="inline-block bg-white text-brand-700 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-brand-50 transition-colors shadow-lg">
+            Start Your Free Trial
+            <svg class="w-5 h-5 inline ml-2"><use href="#icon-arrow-right"/></svg>
         </a>
     </div>
 </section>
 
 <!-- Footer -->
-<footer class="bg-gray-900 text-gray-400 py-8">
-    <div class="max-w-6xl mx-auto px-4 text-center">
-        <p>© 2026 QR Lead Capture by Von Base Enterprises</p>
+<footer class="bg-gray-900 text-gray-400 py-16">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="grid md:grid-cols-4 gap-8 mb-12">
+            <div>
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="QRCapture" class="h-8 mb-4 brightness-0 invert opacity-80">
+                <p class="text-sm">Simple QR code lead capture for restaurants, bars, and lounges.</p>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4">Product</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
+                    <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
+                    <li><a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4">Company</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="/about" class="hover:text-white transition-colors">About</a></li>
+                    <li><a href="mailto:support@vonbase.com" class="hover:text-white transition-colors">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold mb-4">Legal</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="/privacy" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                    <li><a href="/terms" class="hover:text-white transition-colors">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 pt-8 text-sm text-center">
+            <p>© 2026 QRCapture by Von Base Enterprises LLC. All rights reserved.</p>
+        </div>
     </div>
 </footer>
+
+<script>
+    // Mobile menu toggle
+    document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+        document.getElementById('mobileMenu').classList.toggle('hidden');
+    });
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('mobileMenu').classList.add('hidden');
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        });
+    });
+</script>
 {% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - QRCapture{% endblock %}
+
+{% block body %}
+<nav class="bg-white border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="flex justify-between items-center h-16">
+            <a href="/" class="flex items-center space-x-2">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="QRCapture" class="h-8">
+            </a>
+            <a href="/" class="text-gray-600 hover:text-gray-900 text-sm font-medium">← Back to Home</a>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Privacy Policy</h1>
+    <p class="text-gray-500 mb-8">Last updated: February 4, 2026</p>
+    
+    <div class="prose prose-gray max-w-none">
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">1. Information We Collect</h2>
+        <p class="text-gray-600 mb-4">We collect information you provide directly to us, including:</p>
+        <ul class="list-disc pl-6 text-gray-600 mb-4 space-y-2">
+            <li><strong>Account Information:</strong> When you create an account, we collect your venue name and email address.</li>
+            <li><strong>Lead Information:</strong> Information your customers provide through your QR capture page, which may include name, email, and phone number.</li>
+            <li><strong>Payment Information:</strong> Payment details are processed securely through PayPal or Stripe. We do not store credit card numbers.</li>
+        </ul>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">2. How We Use Your Information</h2>
+        <p class="text-gray-600 mb-4">We use the information we collect to:</p>
+        <ul class="list-disc pl-6 text-gray-600 mb-4 space-y-2">
+            <li>Provide, maintain, and improve our services</li>
+            <li>Send you notifications about new leads</li>
+            <li>Process your payments</li>
+            <li>Send you technical notices and support messages</li>
+            <li>Respond to your comments and questions</li>
+        </ul>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">3. Information Sharing</h2>
+        <p class="text-gray-600 mb-4">We do not sell, trade, or rent your personal information to third parties. We may share information only in the following circumstances:</p>
+        <ul class="list-disc pl-6 text-gray-600 mb-4 space-y-2">
+            <li>With your consent</li>
+            <li>To comply with legal obligations</li>
+            <li>To protect our rights and prevent fraud</li>
+            <li>With service providers who assist in our operations (under strict confidentiality agreements)</li>
+        </ul>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">4. Data Security</h2>
+        <p class="text-gray-600 mb-4">We implement appropriate technical and organizational measures to protect your personal data against unauthorized access, alteration, disclosure, or destruction. This includes:</p>
+        <ul class="list-disc pl-6 text-gray-600 mb-4 space-y-2">
+            <li>SSL/TLS encryption for all data in transit</li>
+            <li>Encrypted database storage</li>
+            <li>Regular security audits</li>
+            <li>Access controls and authentication</li>
+        </ul>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">5. Data Retention</h2>
+        <p class="text-gray-600 mb-4">We retain your information for as long as your account is active or as needed to provide you services. You may request deletion of your data at any time by contacting us.</p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">6. Your Rights</h2>
+        <p class="text-gray-600 mb-4">You have the right to:</p>
+        <ul class="list-disc pl-6 text-gray-600 mb-4 space-y-2">
+            <li>Access your personal data</li>
+            <li>Correct inaccurate data</li>
+            <li>Request deletion of your data</li>
+            <li>Export your data</li>
+            <li>Opt out of marketing communications</li>
+        </ul>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">7. Contact Us</h2>
+        <p class="text-gray-600 mb-4">If you have questions about this Privacy Policy, please contact us at:</p>
+        <p class="text-gray-600 mb-4">
+            <strong>Von Base Enterprises LLC</strong><br>
+            Email: support@vonbase.com
+        </p>
+    </div>
+</div>
+
+<footer class="bg-gray-900 text-gray-400 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center text-sm">
+        <p>© 2026 QRCapture by Von Base Enterprises LLC</p>
+    </div>
+</footer>
+{% endblock %}

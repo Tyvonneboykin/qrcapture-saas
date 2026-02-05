@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" fill="none">
+  <defs>
+    <linearGradient id="phoneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#312e81"/>
+    </linearGradient>
+    <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f8fafc"/>
+      <stop offset="100%" style="stop-color:#e2e8f0"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="20" flood-color="#6366f1" flood-opacity="0.3"/>
+    </filter>
+    <clipPath id="screenClip">
+      <rect x="45" y="60" width="210" height="380" rx="5"/>
+    </clipPath>
+  </defs>
+  
+  <!-- Phone Body -->
+  <rect x="30" y="30" width="240" height="440" rx="35" fill="url(#phoneGrad)" filter="url(#shadow)"/>
+  <rect x="38" y="38" width="224" height="424" rx="30" fill="#0f0f23"/>
+  
+  <!-- Screen -->
+  <rect x="45" y="55" width="210" height="390" rx="25" fill="url(#screenGrad)"/>
+  
+  <!-- Notch -->
+  <rect x="110" y="55" width="80" height="25" rx="12" fill="#0f0f23"/>
+  <circle cx="150" cy="67" r="5" fill="#1e293b"/>
+  
+  <!-- Screen Content -->
+  <g clip-path="url(#screenClip)">
+    <!-- App Header -->
+    <rect x="45" y="85" width="210" height="50" fill="#6366f1"/>
+    <text x="150" y="117" text-anchor="middle" font-family="system-ui" font-size="14" font-weight="600" fill="white">The Blue Note</text>
+    
+    <!-- Welcome Text -->
+    <text x="150" y="165" text-anchor="middle" font-family="system-ui" font-size="12" fill="#64748b">Welcome! Get exclusive offers</text>
+    
+    <!-- Form Fields -->
+    <rect x="60" y="185" width="180" height="40" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="75" y="210" font-family="system-ui" font-size="11" fill="#94a3b8">Your name</text>
+    
+    <rect x="60" y="235" width="180" height="40" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="75" y="260" font-family="system-ui" font-size="11" fill="#94a3b8">(555) 123-4567</text>
+    
+    <rect x="60" y="285" width="180" height="40" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+    <text x="75" y="310" font-family="system-ui" font-size="11" fill="#94a3b8">email@example.com</text>
+    
+    <!-- Submit Button -->
+    <rect x="60" y="345" width="180" height="45" rx="8" fill="#6366f1"/>
+    <text x="150" y="373" text-anchor="middle" font-family="system-ui" font-size="13" font-weight="600" fill="white">Submit</text>
+    
+    <!-- Powered By -->
+    <text x="150" y="420" text-anchor="middle" font-family="system-ui" font-size="9" fill="#94a3b8">Powered by QRCapture</text>
+  </g>
+  
+  <!-- Floating QR Code -->
+  <g transform="translate(240, 150)">
+    <rect x="0" y="0" width="130" height="130" rx="12" fill="white" filter="url(#shadow)"/>
+    <rect x="15" y="15" width="100" height="100" rx="4" fill="#1e1b4b"/>
+    <!-- QR Pattern -->
+    <rect x="25" y="25" width="20" height="20" fill="white"/>
+    <rect x="55" y="25" width="20" height="20" fill="white"/>
+    <rect x="85" y="25" width="20" height="20" fill="white"/>
+    <rect x="25" y="55" width="20" height="20" fill="white"/>
+    <rect x="55" y="55" width="20" height="20" fill="white"/>
+    <rect x="85" y="55" width="20" height="20" fill="white"/>
+    <rect x="25" y="85" width="20" height="20" fill="white"/>
+    <rect x="55" y="85" width="20" height="20" fill="white"/>
+    <rect x="85" y="85" width="20" height="20" fill="white"/>
+    <!-- Scan Animation Indicator -->
+    <rect x="15" y="60" width="100" height="3" fill="#6366f1" opacity="0.8">
+      <animate attributeName="y" values="15;100;15" dur="2s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Floating Notification -->
+  <g transform="translate(260, 320)">
+    <rect x="0" y="0" width="140" height="70" rx="10" fill="white" filter="url(#shadow)"/>
+    <circle cx="25" cy="35" r="15" fill="#22c55e"/>
+    <path d="M18 35 L23 40 L32 30" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <text x="50" y="30" font-family="system-ui" font-size="10" font-weight="600" fill="#1e293b">New Lead!</text>
+    <text x="50" y="45" font-family="system-ui" font-size="9" fill="#64748b">John D. just signed up</text>
+  </g>
+</svg>

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Terms of Service - QRCapture{% endblock %}
+
+{% block body %}
+<nav class="bg-white border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="flex justify-between items-center h-16">
+            <a href="/" class="flex items-center space-x-2">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="QRCapture" class="h-8">
+            </a>
+            <a href="/" class="text-gray-600 hover:text-gray-900 text-sm font-medium">← Back to Home</a>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Terms of Service</h1>
+    <p class="text-gray-500 mb-8">Last updated: February 4, 2026</p>
+    
+    <div class="prose prose-gray max-w-none">
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">1. Acceptance of Terms</h2>
+        <p class="text-gray-600 mb-4">By accessing or using QRCapture ("the Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service.</p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">2. Description of Service</h2>
+        <p class="text-gray-600 mb-4">QRCapture provides QR code-based lead capture services for businesses. The Service includes:</p>
+        <ul class="list-disc pl-6 text-gray-600 mb-4 space-y-2">
+            <li>Custom QR codes linked to lead capture pages</li>
+            <li>A dashboard to view and manage captured leads</li>
+            <li>Email notifications for new leads</li>
+            <li>Data export functionality</li>
+        </ul>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">3. Account Registration</h2>
+        <p class="text-gray-600 mb-4">To use the Service, you must create an account and provide accurate, complete information. You are responsible for maintaining the confidentiality of your account and for all activities that occur under your account.</p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">4. Subscription and Payment</h2>
+        <ul class="list-disc pl-6 text-gray-600 mb-4 space-y-2">
+            <li>The Service is offered on a subscription basis at $49/month</li>
+            <li>New accounts receive a 7-day free trial</li>
+            <li>Subscriptions automatically renew unless cancelled</li>
+            <li>You may cancel your subscription at any time through PayPal or Stripe</li>
+            <li>Refunds are provided at our discretion</li>
+        </ul>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">5. Acceptable Use</h2>
+        <p class="text-gray-600 mb-4">You agree not to use the Service to:</p>
+        <ul class="list-disc pl-6 text-gray-600 mb-4 space-y-2">
+            <li>Collect information without proper consent</li>
+            <li>Send spam or unsolicited communications</li>
+            <li>Violate any applicable laws or regulations</li>
+            <li>Infringe on the rights of others</li>
+            <li>Distribute malware or harmful content</li>
+        </ul>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">6. Data Ownership</h2>
+        <p class="text-gray-600 mb-4">You retain ownership of all data you collect through the Service. We claim no ownership over your leads or customer information. You may export and delete your data at any time.</p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">7. Service Availability</h2>
+        <p class="text-gray-600 mb-4">We strive to maintain high availability but do not guarantee uninterrupted access to the Service. We may perform maintenance or updates that temporarily affect availability.</p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">8. Limitation of Liability</h2>
+        <p class="text-gray-600 mb-4">To the maximum extent permitted by law, Von Base Enterprises LLC shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of the Service.</p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">9. Termination</h2>
+        <p class="text-gray-600 mb-4">We may terminate or suspend your account at any time for violation of these terms. Upon termination, your right to use the Service ceases immediately.</p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">10. Changes to Terms</h2>
+        <p class="text-gray-600 mb-4">We may modify these terms at any time. We will notify you of significant changes via email. Continued use of the Service after changes constitutes acceptance of the new terms.</p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">11. Contact</h2>
+        <p class="text-gray-600 mb-4">
+            For questions about these Terms, contact us at:<br>
+            <strong>Von Base Enterprises LLC</strong><br>
+            Email: support@vonbase.com
+        </p>
+    </div>
+</div>
+
+<footer class="bg-gray-900 text-gray-400 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center text-sm">
+        <p>© 2026 QRCapture by Von Base Enterprises LLC</p>
+    </div>
+</footer>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}About - QRCapture{% endblock %}
+
+{% block body %}
+<nav class="bg-white border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="flex justify-between items-center h-16">
+            <a href="/" class="flex items-center space-x-2">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="QRCapture" class="h-8">
+            </a>
+            <a href="/" class="text-gray-600 hover:text-gray-900 text-sm font-medium">← Back to Home</a>
+        </div>
+    </div>
+</nav>
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">About QRCapture</h1>
+    
+    <div class="prose prose-gray max-w-none">
+        <p class="text-lg text-gray-600 mb-6">
+            QRCapture was built with a simple mission: help local businesses grow their customer lists without the friction of app downloads or complicated signup forms.
+        </p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Our Story</h2>
+        <p class="text-gray-600 mb-4">
+            We noticed that restaurants, bars, and lounges were missing out on valuable customer connections. Guests would visit, have a great time, and leave—never to be seen again. There was no easy way to stay in touch.
+        </p>
+        <p class="text-gray-600 mb-4">
+            Traditional solutions required app downloads, complicated loyalty programs, or intrusive data collection. We knew there had to be a better way.
+        </p>
+        <p class="text-gray-600 mb-4">
+            QRCapture is that better way. A simple QR code that any smartphone can scan, leading to a quick form where customers can opt-in to receive updates. No apps, no friction, just connection.
+        </p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Built by Von Base Enterprises</h2>
+        <p class="text-gray-600 mb-4">
+            QRCapture is a product of Von Base Enterprises LLC, a technology company based in Atlanta, Georgia. We're passionate about building tools that help small businesses thrive in the digital age.
+        </p>
+        
+        <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Get in Touch</h2>
+        <p class="text-gray-600 mb-4">
+            Have questions or feedback? We'd love to hear from you.
+        </p>
+        <p class="text-gray-600">
+            <strong>Email:</strong> <a href="mailto:support@vonbase.com" class="text-brand-600 hover:underline">support@vonbase.com</a>
+        </p>
+    </div>
+</div>
+
+<footer class="bg-gray-900 text-gray-400 py-8 mt-auto">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center text-sm">
+        <p>© 2026 QRCapture by Von Base Enterprises LLC</p>
+    </div>
+</footer>
+{% endblock %}
