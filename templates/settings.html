@@ -3,114 +3,253 @@
 {% block title %}Settings - {{ venue.name }}{% endblock %}
 
 {% block body %}
-<nav class="bg-white shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-        <a href="/dashboard" class="text-xl font-bold text-indigo-600">📱 QR Capture</a>
-        <div class="flex items-center space-x-4">
-            <span class="text-gray-600">{{ venue.name }}</span>
-            <a href="/logout" class="text-gray-500 hover:text-gray-700">Logout</a>
-        </div>
-    </div>
-</nav>
-
-<div class="max-w-2xl mx-auto px-4 py-8">
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold">Settings</h1>
-        <a href="/dashboard" class="text-indigo-600 hover:underline">← Back to Dashboard</a>
-    </div>
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="mb-4 p-4 rounded-lg {% if category == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
-        {{ message }}
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-    
-    <form method="POST" class="bg-white shadow rounded-xl p-6 space-y-6">
-        <div>
-            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Venue Name</label>
-            <input type="text" id="name" name="name" value="{{ venue.name }}"
-                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-        </div>
-        
-        <div>
-            <label for="welcome_message" class="block text-sm font-medium text-gray-700 mb-2">Welcome Message</label>
-            <textarea id="welcome_message" name="welcome_message" rows="3"
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">{{ venue.welcome_message }}</textarea>
-            <p class="mt-1 text-sm text-gray-500">Shown on your capture page above the form</p>
-        </div>
-        
-        <div>
-            <label for="thank_you_message" class="block text-sm font-medium text-gray-700 mb-2">Thank You Message</label>
-            <textarea id="thank_you_message" name="thank_you_message" rows="3"
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">{{ venue.thank_you_message }}</textarea>
-            <p class="mt-1 text-sm text-gray-500">Shown after successful submission</p>
-        </div>
-        
-        <div>
-            <label for="primary_color" class="block text-sm font-medium text-gray-700 mb-2">Brand Color</label>
-            <div class="flex items-center gap-3">
-                <input type="color" id="primary_color" name="primary_color" value="{{ venue.primary_color }}"
-                       class="h-10 w-20 rounded cursor-pointer">
-                <span class="text-gray-500">{{ venue.primary_color }}</span>
+<div class="min-h-screen bg-gray-50">
+    <!-- Top Nav -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <a href="/dashboard" class="flex items-center gap-2">
+                        <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">QRCapture</span>
+                    </a>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <a href="/dashboard" class="text-gray-500 hover:text-gray-700 text-sm font-medium">← Back to Dashboard</a>
+                    <div class="h-8 w-px bg-gray-200"></div>
+                    <a href="/logout" class="text-gray-400 hover:text-gray-600 transition-colors" title="Logout">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                    </a>
+                </div>
             </div>
         </div>
-        
-        <div class="pt-4">
-            <button type="submit" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700">
-                Save Changes
-            </button>
+    </nav>
+
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+        <div class="mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Settings</h1>
+            <p class="text-gray-500 mt-1">Customize your capture page and brand</p>
         </div>
-    </form>
-    
-    <!-- Menu Upload Section -->
-    <div class="bg-white shadow rounded-xl p-6 mt-6">
-        <h2 class="text-lg font-semibold mb-4">📋 Menu</h2>
         
-        {% if venue.has_menu %}
-        <!-- Current Menu -->
-        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    {% if venue.menu_content_type == 'application/pdf' %}
-                    <span class="text-3xl">📄</span>
-                    {% else %}
-                    <span class="text-3xl">🖼️</span>
-                    {% endif %}
-                    <div>
-                        <p class="font-medium">{{ venue.menu_filename }}</p>
-                        <p class="text-sm text-gray-500">
-                            <a href="{{ base_url }}/menu/{{ venue.slug }}" target="_blank" class="text-indigo-600 hover:underline">
-                                View Menu →
-                            </a>
-                        </p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="mb-6 p-4 rounded-xl flex items-center gap-3 {% if category == 'error' %}bg-red-50 text-red-700 border border-red-100{% else %}bg-green-50 text-green-700 border border-green-100{% endif %}">
+            {% if category == 'error' %}
+            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+            {% else %}
+            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            {% endif %}
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        
+        <!-- Branding Settings -->
+        <form method="POST" class="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                <h2 class="text-lg font-semibold text-gray-900">Branding & Messages</h2>
+                <p class="text-sm text-gray-500">Customize how your capture page looks</p>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Venue Name</label>
+                    <input type="text" id="name" name="name" value="{{ venue.name }}"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
+                </div>
+                
+                <div>
+                    <label for="welcome_message" class="block text-sm font-medium text-gray-700 mb-2">Welcome Message</label>
+                    <textarea id="welcome_message" name="welcome_message" rows="3"
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">{{ venue.welcome_message }}</textarea>
+                    <p class="mt-2 text-sm text-gray-500">Shown on your capture page above the form</p>
+                </div>
+                
+                <div>
+                    <label for="thank_you_message" class="block text-sm font-medium text-gray-700 mb-2">Thank You Message</label>
+                    <textarea id="thank_you_message" name="thank_you_message" rows="3"
+                              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">{{ venue.thank_you_message }}</textarea>
+                    <p class="mt-2 text-sm text-gray-500">Shown after a customer submits their info</p>
+                </div>
+                
+                <div>
+                    <label for="primary_color" class="block text-sm font-medium text-gray-700 mb-2">Brand Color</label>
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <input type="color" id="primary_color" name="primary_color" value="{{ venue.primary_color }}"
+                                   class="w-16 h-12 rounded-xl cursor-pointer border-2 border-gray-200">
+                        </div>
+                        <div class="flex-1">
+                            <input type="text" id="color_hex" value="{{ venue.primary_color }}" 
+                                   class="w-32 px-4 py-2 border border-gray-200 rounded-xl text-sm font-mono"
+                                   onchange="document.getElementById('primary_color').value = this.value">
+                            <p class="mt-1 text-sm text-gray-500">Used for buttons and accents</p>
+                        </div>
                     </div>
                 </div>
-                <form action="{{ url_for('delete_menu') }}" method="POST" onsubmit="return confirm('Delete this menu?')">
-                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">
-                        Delete
-                    </button>
+                
+                <!-- Live Preview -->
+                <div class="bg-gray-50 rounded-xl p-4">
+                    <p class="text-sm font-medium text-gray-700 mb-3">Preview</p>
+                    <div class="bg-white rounded-lg p-4 border border-gray-200">
+                        <p class="text-gray-600 text-sm mb-3" id="previewWelcome">{{ venue.welcome_message }}</p>
+                        <button type="button" id="previewButton" style="background-color: {{ venue.primary_color }}" 
+                                class="px-4 py-2 text-white text-sm font-medium rounded-lg">
+                            Submit Info
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end">
+                <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-medium hover:from-indigo-700 hover:to-purple-700 transition-all">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+        
+        <!-- Menu Upload Section -->
+        <div id="menu" class="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-6">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                <h2 class="text-lg font-semibold text-gray-900">Menu</h2>
+                <p class="text-sm text-gray-500">Upload your menu for customers to view after signing up</p>
+            </div>
+            
+            <div class="p-6">
+                {% if venue.has_menu %}
+                <!-- Current Menu -->
+                <div class="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                {% if venue.menu_content_type == 'application/pdf' %}
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                {% else %}
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <p class="font-medium text-gray-900">{{ venue.menu_filename }}</p>
+                                <a href="{{ base_url }}/menu/{{ venue.slug }}" target="_blank" class="text-sm text-green-600 hover:text-green-700">
+                                    View menu →
+                                </a>
+                            </div>
+                        </div>
+                        <form action="{{ url_for('delete_menu') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this menu?')">
+                            <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Upload a new file to replace the current menu.</p>
+                {% else %}
+                <div class="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        </div>
+                        <div>
+                            <p class="font-medium text-amber-800">No menu uploaded</p>
+                            <p class="text-sm text-amber-600">Customers won't see a "View Menu" button until you upload one.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <form action="{{ url_for('upload_menu') }}" method="POST" enctype="multipart/form-data">
+                    <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-indigo-300 transition-colors">
+                        <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                        </div>
+                        <input type="file" name="menu" id="menuFile" accept=".pdf,.png,.jpg,.jpeg,.webp"
+                               class="hidden" onchange="updateFileName(this)">
+                        <label for="menuFile" class="cursor-pointer">
+                            <span class="text-indigo-600 font-medium hover:text-indigo-700">Click to upload</span>
+                            <span class="text-gray-500"> or drag and drop</span>
+                        </label>
+                        <p class="text-sm text-gray-400 mt-2">PDF, PNG, JPG, WEBP up to 10MB</p>
+                        <p id="selectedFile" class="text-sm text-indigo-600 font-medium mt-2 hidden"></p>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button type="submit" class="px-6 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors">
+                            Upload Menu
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
         
-        <p class="text-sm text-gray-500 mb-4">Upload a new file to replace the current menu.</p>
-        {% else %}
-        <p class="text-gray-600 mb-4">Upload your menu so customers can view it after signing up. Supported formats: PDF, PNG, JPG, WEBP (max 10MB).</p>
-        {% endif %}
-        
-        <form action="{{ url_for('upload_menu') }}" method="POST" enctype="multipart/form-data">
-            <div class="flex items-center gap-4">
-                <input type="file" name="menu" accept=".pdf,.png,.jpg,.jpeg,.webp"
-                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 whitespace-nowrap">
-                    Upload Menu
-                </button>
+        <!-- Account Info -->
+        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                <h2 class="text-lg font-semibold text-gray-900">Account</h2>
             </div>
-        </form>
+            
+            <div class="p-6">
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-sm text-gray-500 mb-1">Email</p>
+                        <p class="font-medium text-gray-900">{{ venue.email }}</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-sm text-gray-500 mb-1">Venue ID</p>
+                        <p class="font-mono text-gray-900">{{ venue.slug }}</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-sm text-gray-500 mb-1">Status</p>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if venue.subscription_status == 'active' %}bg-green-100 text-green-700
+                            {% elif venue.subscription_status == 'trialing' %}bg-blue-100 text-blue-700
+                            {% else %}bg-amber-100 text-amber-700{% endif %}">
+                            {{ venue.subscription_status | title }}
+                        </span>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-sm text-gray-500 mb-1">Member since</p>
+                        <p class="font-medium text-gray-900">{{ venue.created_at.strftime('%b %d, %Y') }}</p>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-6 border-t border-gray-100">
+                    <a href="/dashboard/billing" class="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        Manage Billing & Subscription
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+    // Live preview updates
+    document.getElementById('welcome_message').addEventListener('input', function() {
+        document.getElementById('previewWelcome').textContent = this.value;
+    });
+    
+    document.getElementById('primary_color').addEventListener('input', function() {
+        document.getElementById('previewButton').style.backgroundColor = this.value;
+        document.getElementById('color_hex').value = this.value;
+    });
+    
+    // File upload display
+    function updateFileName(input) {
+        const fileName = input.files[0]?.name;
+        const display = document.getElementById('selectedFile');
+        if (fileName) {
+            display.textContent = '📎 ' + fileName;
+            display.classList.remove('hidden');
+        }
+    }
+</script>
 {% endblock %}

@@ -68,6 +68,19 @@ class Venue(db.Model):
         return self.leads.filter(Lead.created_at >= start_of_month).count()
     
     @property
+    def leads_this_week(self):
+        from datetime import datetime, timedelta
+        start_of_week = datetime.utcnow() - timedelta(days=datetime.utcnow().weekday())
+        start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+        return self.leads.filter(Lead.created_at >= start_of_week).count()
+    
+    @property
+    def leads_today(self):
+        from datetime import datetime
+        start_of_day = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        return self.leads.filter(Lead.created_at >= start_of_day).count()
+    
+    @property
     def has_menu(self):
         """Check if venue has a menu uploaded"""
         return self.menu_data is not None and len(self.menu_data) > 0
