@@ -667,29 +667,35 @@ def serve_menu(slug):
 def billing():
     """Redirect to appropriate billing portal based on payment provider"""
     venue = get_current_venue()
+    paypal_manage_url = "https://www.paypal.com/myaccount/autopay/"
     
-    # Check payment provider
+    # Check payment provider - PayPal first (most common)
     if venue.payment_provider == 'paypal' or venue.paypal_subscription_id:
-        # PayPal users manage subscription through PayPal
-        # Link to PayPal subscription management
-        paypal_manage_url = "https://www.paypal.com/myaccount/autopay/"
-        flash('You signed up with PayPal. Manage your subscription on PayPal.', 'info')
+        flash('Manage your subscription on PayPal.', 'info')
         return redirect(paypal_manage_url)
     
-    if not venue.stripe_customer_id:
-        flash('No billing information found. Please contact support.', 'error')
-        return redirect(url_for('dashboard'))
+    # Stripe users
+    if venue.stripe_customer_id:
+        try:
+            portal = stripe.billing_portal.Session.create(
+                customer=venue.stripe_customer_id,
+                return_url=f"{BASE_URL}/dashboard"
+            )
+            return redirect(portal.url)
+        except Exception as e:
+            app.logger.error(f"Stripe portal error: {e}")
+            flash('Could not open billing portal. Please try again later.', 'error')
+            return redirect(url_for('dashboard'))
     
-    try:
-        portal = stripe.billing_portal.Session.create(
-            customer=venue.stripe_customer_id,
-            return_url=f"{BASE_URL}/dashboard"
-        )
-        return redirect(portal.url)
-    except Exception as e:
-        app.logger.error(f"Stripe portal error: {e}")
-        flash('Could not open billing portal. Please try again later.', 'error')
-        return redirect(url_for('dashboard'))
+    # Manual/unknown provider - default to PayPal since it's primary
+    # This handles venues created via admin or incomplete signup
+    if venue.payment_provider == 'manual' or venue.subscription_status == 'trialing':
+        flash('Manage your subscription on PayPal.', 'info')
+        return redirect(paypal_manage_url)
+    
+    # Fallback error
+    flash('No billing information found. Please contact support.', 'error')
+    return redirect(url_for('dashboard'))
 
 @app.route('/dashboard/leads/export')
 @venue_required
@@ -859,6 +865,42 @@ def admin_create_venue():
             'venue_id': venue.id,
             'slug': venue.slug,
             'email': venue.email
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/update-venue-payment', methods=['POST'])
+def admin_update_venue_payment():
+    """Admin endpoint to update venue payment provider"""
+    auth = request.headers.get('X-Admin-Key')
+    if auth != app.secret_key:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        data = request.get_json() or {}
+        email = data.get('email', '').strip().lower()
+        payment_provider = data.get('payment_provider', 'paypal')
+        paypal_subscription_id = data.get('paypal_subscription_id')
+        
+        if not email:
+            return jsonify({'error': 'Email required'}), 400
+        
+        venue = Venue.query.filter(db.func.lower(Venue.email) == email).first()
+        if not venue:
+            return jsonify({'error': 'Venue not found'}), 404
+        
+        venue.payment_provider = payment_provider
+        if paypal_subscription_id:
+            venue.paypal_subscription_id = paypal_subscription_id
+        db.session.commit()
+        
+        return jsonify({
+            'status': 'updated',
+            'venue_id': venue.id,
+            'email': venue.email,
+            'payment_provider': venue.payment_provider,
+            'paypal_subscription_id': venue.paypal_subscription_id
         })
     except Exception as e:
         db.session.rollback()
