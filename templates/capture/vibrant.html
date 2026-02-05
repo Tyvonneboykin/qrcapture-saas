@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ venue.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --brand: {{ venue.primary_color or '#8b5cf6' }}; }
+        body { font-family: 'Space Grotesk', sans-serif; }
+        .brand-bg { background-color: var(--brand); }
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 30px rgba(139, 92, 246, 0.3); }
+            to { box-shadow: 0 0 60px rgba(236, 72, 153, 0.4); }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .bg-noise {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-pink-500 flex items-center justify-center p-4 relative">
+    <div class="absolute inset-0 bg-noise"></div>
+    
+    <div class="w-full max-w-md animate-slide-up relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            {% if venue.has_logo %}
+            <img src="{{ base_url }}/logo/{{ venue.slug }}" alt="{{ venue.name }}" class="h-16 mx-auto mb-4 rounded-2xl shadow-lg">
+            {% else %}
+            <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shadow-lg">
+                <span class="text-4xl font-bold text-white">{{ venue.name[0] | upper }}</span>
+            </div>
+            {% endif %}
+            <h1 class="text-4xl font-bold text-white mb-2 drop-shadow-lg">{{ venue.name }}</h1>
+            {% if venue.tagline %}
+            <p class="text-white/80 text-lg">{{ venue.tagline }}</p>
+            {% endif %}
+        </div>
+        
+        <!-- Form Card -->
+        <div class="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl animate-glow" id="formCard">
+            {% if venue.incentive %}
+            <div class="bg-gradient-to-r from-violet-500 to-pink-500 rounded-2xl px-4 py-3 mb-6 text-center">
+                <span class="text-white font-semibold">🔥 {{ venue.incentive }}</span>
+            </div>
+            {% endif %}
+            
+            <p class="text-gray-600 text-center mb-6 text-lg">{{ venue.welcome_message }}</p>
+            
+            {% if venue.show_social_proof and venue.lead_count > 5 %}
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <div class="flex -space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-pink-400 border-2 border-white"></div>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-orange-400 border-2 border-white"></div>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-yellow-400 border-2 border-white"></div>
+                </div>
+                <span class="text-gray-500 font-medium">{{ venue.lead_count }}+ people joined!</span>
+            </div>
+            {% endif %}
+            
+            <form id="captureForm" class="space-y-4">
+                <div>
+                    <input type="text" id="name" name="name" placeholder="Your name"
+                           class="w-full px-5 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:border-violet-400 transition-all text-lg">
+                </div>
+                
+                <div>
+                    <input type="tel" id="phone" name="phone" placeholder="Phone number"
+                           class="w-full px-5 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:border-violet-400 transition-all text-lg">
+                </div>
+                
+                <div>
+                    <input type="email" id="email" name="email" placeholder="Email address"
+                           class="w-full px-5 py-4 bg-gray-50 border-2 border-gray-100 rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:border-violet-400 transition-all text-lg">
+                </div>
+                
+                <p class="text-gray-400 text-sm text-center">Phone or email required</p>
+                
+                <button type="submit" id="submitBtn"
+                        class="w-full bg-gradient-to-r from-violet-600 to-pink-600 text-white py-4 rounded-2xl font-bold text-lg hover:from-violet-700 hover:to-pink-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg">
+                    Let's Go! 🚀
+                </button>
+            </form>
+            
+            <p id="errorMsg" class="hidden mt-4 text-center text-red-500 text-sm"></p>
+        </div>
+        
+        <!-- Success Card -->
+        <div class="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl text-center hidden" id="successCard">
+            <div class="text-7xl mb-4">🎉</div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Awesome!</h2>
+            <p class="text-gray-600 mb-6 text-lg" id="thankYouMsg">{{ venue.thank_you_message }}</p>
+            
+            {% if venue.has_menu %}
+            <a href="{{ base_url }}/menu/{{ venue.slug }}" target="_blank"
+               class="inline-flex items-center gap-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white py-4 px-8 rounded-2xl font-bold hover:from-violet-700 hover:to-pink-700 transition-all">
+                📋 Check Out Our Menu
+            </a>
+            {% endif %}
+        </div>
+        
+        <p class="text-center text-white/50 text-xs mt-6">Powered by QRCapture</p>
+    </div>
+    
+    <script>
+        const form = document.getElementById('captureForm');
+        const formCard = document.getElementById('formCard');
+        const successCard = document.getElementById('successCard');
+        const errorMsg = document.getElementById('errorMsg');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            
+            if (!phone && !email) {
+                errorMsg.textContent = 'Please enter your phone or email';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            errorMsg.classList.add('hidden');
+            
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('{{ url_for("capture_submit", slug=venue.slug) }}', {
+                    method: 'POST', body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    formCard.classList.add('hidden');
+                    successCard.classList.remove('hidden');
+                    if (data.message) document.getElementById('thankYouMsg').textContent = data.message;
+                } else {
+                    throw new Error(data.error || 'Something went wrong');
+                }
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Let's Go! 🚀";
+            }
+        });
+        
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+    </script>
+</body>
+</html>

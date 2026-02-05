@@ -29,6 +29,17 @@ class Venue(db.Model):
     logo_url = db.Column(db.String(500))
     primary_color = db.Column(db.String(7), default="#6366f1")  # Hex color
     
+    # Template system
+    template = db.Column(db.String(20), default='modern')  # modern, elegant, vibrant, cozy, minimal
+    tagline = db.Column(db.String(200))  # Subtitle under venue name
+    incentive = db.Column(db.String(200))  # Specific offer: "Get 10% off your first visit!"
+    show_social_proof = db.Column(db.Boolean, default=True)  # Show "Join X others"
+    
+    # Logo storage (stored in DB like menu)
+    logo_data = db.Column(db.LargeBinary)
+    logo_filename = db.Column(db.String(255))
+    logo_content_type = db.Column(db.String(100))
+    
     # Menu storage (stored in DB for simplicity - migrate to R2 at scale)
     menu_data = db.Column(db.LargeBinary)  # Binary file data
     menu_filename = db.Column(db.String(255))  # Original filename
@@ -81,6 +92,11 @@ class Venue(db.Model):
         return self.leads.filter(Lead.created_at >= start_of_day).count()
     
     @property
+    def has_logo(self):
+        """Check if venue has a logo uploaded"""
+        return self.logo_data is not None and len(self.logo_data) > 0
+    
+    @property
     def has_menu(self):
         """Check if venue has a menu uploaded"""
         return self.menu_data is not None and len(self.menu_data) > 0
@@ -89,6 +105,11 @@ class Venue(db.Model):
     def menu_url(self):
         """URL to view the menu"""
         return f"/menu/{self.slug}" if self.has_menu else None
+    
+    @property 
+    def logo_url_path(self):
+        """URL to serve the logo"""
+        return f"/logo/{self.slug}" if self.has_logo else None
 
 
 class Lead(db.Model):

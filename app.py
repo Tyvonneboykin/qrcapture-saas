@@ -124,7 +124,15 @@ def capture_page(slug):
     if venue.subscription_status not in ('active', 'trialing'):
         return render_template('capture_inactive.html'), 402
     
-    return render_template('capture.html', venue=venue)
+    # Select template (default to modern if not set)
+    template_name = venue.template or 'modern'
+    template_file = f'capture/{template_name}.html'
+    
+    # Fallback to default if template doesn't exist
+    try:
+        return render_template(template_file, venue=venue, base_url=BASE_URL)
+    except:
+        return render_template('capture/modern.html', venue=venue, base_url=BASE_URL)
 
 @app.route('/c/<slug>/submit', methods=['POST'])
 def capture_submit(slug):
@@ -589,10 +597,26 @@ def settings():
         venue.welcome_message = request.form.get('welcome_message', venue.welcome_message)
         venue.thank_you_message = request.form.get('thank_you_message', venue.thank_you_message)
         venue.primary_color = request.form.get('primary_color', venue.primary_color)
+        
+        # Template settings
+        venue.template = request.form.get('template', venue.template or 'modern')
+        venue.tagline = request.form.get('tagline', '').strip() or None
+        venue.incentive = request.form.get('incentive', '').strip() or None
+        venue.show_social_proof = request.form.get('show_social_proof') == 'on'
+        
         db.session.commit()
         flash('Settings saved!', 'success')
     
-    return render_template('settings.html', venue=venue, base_url=BASE_URL)
+    # Available templates
+    templates = [
+        {'id': 'modern', 'name': 'Modern', 'desc': 'Clean & minimal', 'preview': 'bg-gradient-to-br from-slate-900 to-slate-800'},
+        {'id': 'elegant', 'name': 'Elegant', 'desc': 'Upscale & sophisticated', 'preview': 'bg-gradient-to-br from-stone-900 to-amber-950'},
+        {'id': 'vibrant', 'name': 'Vibrant', 'desc': 'Bold & energetic', 'preview': 'bg-gradient-to-br from-purple-600 to-pink-500'},
+        {'id': 'cozy', 'name': 'Cozy', 'desc': 'Warm & inviting', 'preview': 'bg-gradient-to-br from-orange-800 to-amber-700'},
+        {'id': 'minimal', 'name': 'Minimal', 'desc': 'Simple & light', 'preview': 'bg-gradient-to-br from-gray-100 to-white'},
+    ]
+    
+    return render_template('settings.html', venue=venue, base_url=BASE_URL, templates=templates)
 
 # =============================================================================
 # MENU UPLOAD & SERVING
@@ -681,6 +705,88 @@ def serve_menu(slug):
         headers={
             'Content-Disposition': f'inline; filename="{venue.menu_filename}"',
             'Cache-Control': 'public, max-age=3600'  # Cache for 1 hour
+        }
+    )
+
+# =============================================================================
+# LOGO UPLOAD & SERVING
+# =============================================================================
+
+ALLOWED_LOGO_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'svg'}
+MAX_LOGO_SIZE = 2 * 1024 * 1024  # 2MB
+
+def allowed_logo_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_LOGO_EXTENSIONS
+
+@app.route('/dashboard/logo/upload', methods=['POST'])
+@venue_required
+def upload_logo():
+    """Handle logo file upload"""
+    venue = get_current_venue()
+    
+    if 'logo' not in request.files:
+        flash('No file selected', 'error')
+        return redirect(url_for('settings'))
+    
+    file = request.files['logo']
+    
+    if file.filename == '':
+        flash('No file selected', 'error')
+        return redirect(url_for('settings'))
+    
+    if not allowed_logo_file(file.filename):
+        flash('Invalid file type. Please upload PNG, JPG, WEBP, or SVG.', 'error')
+        return redirect(url_for('settings'))
+    
+    file_data = file.read()
+    
+    if len(file_data) > MAX_LOGO_SIZE:
+        flash(f'File too large. Maximum size is {MAX_LOGO_SIZE // (1024*1024)}MB.', 'error')
+        return redirect(url_for('settings'))
+    
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    content_types = {
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'webp': 'image/webp',
+        'svg': 'image/svg+xml'
+    }
+    
+    venue.logo_data = file_data
+    venue.logo_filename = file.filename
+    venue.logo_content_type = content_types.get(ext, 'image/png')
+    db.session.commit()
+    
+    flash('Logo uploaded successfully!', 'success')
+    return redirect(url_for('settings'))
+
+@app.route('/dashboard/logo/delete', methods=['POST'])
+@venue_required
+def delete_logo():
+    """Delete uploaded logo"""
+    venue = get_current_venue()
+    venue.logo_data = None
+    venue.logo_filename = None
+    venue.logo_content_type = None
+    db.session.commit()
+    flash('Logo deleted.', 'success')
+    return redirect(url_for('settings'))
+
+@app.route('/logo/<slug>')
+def serve_logo(slug):
+    """Serve logo for a venue"""
+    venue = Venue.query.filter_by(slug=slug).first_or_404()
+    
+    if not venue.has_logo:
+        return "No logo available", 404
+    
+    return Response(
+        venue.logo_data,
+        mimetype=venue.logo_content_type,
+        headers={
+            'Content-Disposition': f'inline; filename="{venue.logo_filename}"',
+            'Cache-Control': 'public, max-age=86400'  # Cache for 24 hours
         }
     )
 
@@ -1003,6 +1109,71 @@ def run_migrations():
             IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                           WHERE table_name='venues' AND column_name='menu_content_type') THEN
                 ALTER TABLE venues ADD COLUMN menu_content_type VARCHAR(100);
+            END IF;
+        END $$;
+        """,
+        # Template system columns
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='template') THEN
+                ALTER TABLE venues ADD COLUMN template VARCHAR(20) DEFAULT 'modern';
+            END IF;
+        END $$;
+        """,
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='tagline') THEN
+                ALTER TABLE venues ADD COLUMN tagline VARCHAR(200);
+            END IF;
+        END $$;
+        """,
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='incentive') THEN
+                ALTER TABLE venues ADD COLUMN incentive VARCHAR(200);
+            END IF;
+        END $$;
+        """,
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='show_social_proof') THEN
+                ALTER TABLE venues ADD COLUMN show_social_proof BOOLEAN DEFAULT TRUE;
+            END IF;
+        END $$;
+        """,
+        # Logo storage columns
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='logo_data') THEN
+                ALTER TABLE venues ADD COLUMN logo_data BYTEA;
+            END IF;
+        END $$;
+        """,
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='logo_filename') THEN
+                ALTER TABLE venues ADD COLUMN logo_filename VARCHAR(255);
+            END IF;
+        END $$;
+        """,
+        """
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                          WHERE table_name='venues' AND column_name='logo_content_type') THEN
+                ALTER TABLE venues ADD COLUMN logo_content_type VARCHAR(100);
             END IF;
         END $$;
         """,

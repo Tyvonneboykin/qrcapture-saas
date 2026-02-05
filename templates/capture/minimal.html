@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ venue.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --brand: {{ venue.primary_color or '#18181b' }}; }
+        body { font-family: 'DM Sans', sans-serif; }
+        .brand-bg { background-color: var(--brand); }
+        .brand-text { color: var(--brand); }
+        .animate-minimal { animation: minimalFade 0.4s ease-out; }
+        @keyframes minimalFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-sm animate-minimal">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            {% if venue.has_logo %}
+            <img src="{{ base_url }}/logo/{{ venue.slug }}" alt="{{ venue.name }}" class="h-12 mx-auto mb-6">
+            {% endif %}
+            <h1 class="text-2xl font-semibold text-gray-900">{{ venue.name }}</h1>
+            {% if venue.tagline %}
+            <p class="text-gray-500 mt-1">{{ venue.tagline }}</p>
+            {% endif %}
+        </div>
+        
+        <!-- Form -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100" id="formCard">
+            {% if venue.incentive %}
+            <div class="bg-gray-50 rounded-xl px-4 py-3 mb-6 text-center">
+                <span class="text-gray-700 text-sm">{{ venue.incentive }}</span>
+            </div>
+            {% endif %}
+            
+            <p class="text-gray-600 text-center mb-6 text-sm">{{ venue.welcome_message }}</p>
+            
+            {% if venue.show_social_proof and venue.lead_count > 5 %}
+            <p class="text-gray-400 text-center text-xs mb-6">{{ venue.lead_count }}+ have joined</p>
+            {% endif %}
+            
+            <form id="captureForm" class="space-y-3">
+                <input type="text" id="name" name="name" placeholder="Name"
+                       class="w-full px-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm">
+                
+                <input type="tel" id="phone" name="phone" placeholder="Phone"
+                       class="w-full px-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm">
+                
+                <input type="email" id="email" name="email" placeholder="Email"
+                       class="w-full px-4 py-3.5 bg-gray-50 border-0 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all text-sm">
+                
+                <p class="text-gray-400 text-xs text-center py-1">Phone or email required</p>
+                
+                <button type="submit" id="submitBtn"
+                        class="w-full brand-bg text-white py-3.5 rounded-xl font-medium text-sm hover:opacity-90 transition-all">
+                    Submit
+                </button>
+            </form>
+            
+            <p id="errorMsg" class="hidden mt-4 text-center text-red-500 text-xs"></p>
+        </div>
+        
+        <!-- Success -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 text-center hidden" id="successCard">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-green-50 flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-900 mb-1">Done!</h2>
+            <p class="text-gray-500 text-sm mb-6" id="thankYouMsg">{{ venue.thank_you_message }}</p>
+            
+            {% if venue.has_menu %}
+            <a href="{{ base_url }}/menu/{{ venue.slug }}" target="_blank"
+               class="inline-block brand-bg text-white py-3 px-6 rounded-xl font-medium text-sm hover:opacity-90 transition-all">
+                View Menu
+            </a>
+            {% endif %}
+        </div>
+        
+        <p class="text-center text-gray-300 text-xs mt-8">Powered by QRCapture</p>
+    </div>
+    
+    <script>
+        const form = document.getElementById('captureForm');
+        const formCard = document.getElementById('formCard');
+        const successCard = document.getElementById('successCard');
+        const errorMsg = document.getElementById('errorMsg');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value.trim();
+            const email = document.getElementById('email').value.trim();
+            
+            if (!phone && !email) {
+                errorMsg.textContent = 'Please enter phone or email';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = '...';
+            errorMsg.classList.add('hidden');
+            
+            try {
+                const formData = new FormData(form);
+                const response = await fetch('{{ url_for("capture_submit", slug=venue.slug) }}', {
+                    method: 'POST', body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    formCard.classList.add('hidden');
+                    successCard.classList.remove('hidden');
+                    if (data.message) document.getElementById('thankYouMsg').textContent = data.message;
+                } else {
+                    throw new Error(data.error || 'Error');
+                }
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+            }
+        });
+        
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let x = e.target.value.replace(/\D/g, '').match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
+            e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+        });
+    </script>
+</body>
+</html>
