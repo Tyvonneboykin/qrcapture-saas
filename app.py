@@ -679,6 +679,88 @@ def run_db_migration():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/debug/paypal')
+def debug_paypal():
+    """Debug PayPal connection"""
+    try:
+        access_token = get_paypal_access_token()
+        if not access_token:
+            return jsonify({'status': 'error', 'message': 'Failed to get access token'})
+        return jsonify({
+            'status': 'ok',
+            'access_token_prefix': access_token[:20] + '...',
+            'api_base': PAYPAL_API_BASE,
+            'plan_id': PAYPAL_PLAN_ID,
+            'client_id_prefix': PAYPAL_CLIENT_ID[:20] + '...' if PAYPAL_CLIENT_ID else None
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/debug/paypal/subscription/<sub_id>')
+def debug_paypal_subscription(sub_id):
+    """Debug a specific PayPal subscription"""
+    try:
+        access_token = get_paypal_access_token()
+        if not access_token:
+            return jsonify({'error': 'Failed to get PayPal access token'}), 500
+        
+        response = requests.get(
+            f"{PAYPAL_API_BASE}/v1/billing/subscriptions/{sub_id}",
+            headers={'Authorization': f'Bearer {access_token}'}
+        )
+        
+        return jsonify({
+            'status_code': response.status_code,
+            'response': response.json() if response.status_code == 200 else response.text
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/create-venue', methods=['POST'])
+def admin_create_venue():
+    """Admin endpoint to manually create a venue (for debugging)"""
+    # Simple auth check - require secret key
+    auth = request.headers.get('X-Admin-Key')
+    if auth != app.secret_key:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        data = request.get_json() or {}
+        name = data.get('name', 'New Venue')
+        email = data.get('email', '').strip().lower()
+        
+        if not email:
+            return jsonify({'error': 'Email required'}), 400
+        
+        # Check if exists
+        existing = Venue.query.filter(db.func.lower(Venue.email) == email).first()
+        if existing:
+            return jsonify({
+                'status': 'exists',
+                'venue_id': existing.id,
+                'slug': existing.slug
+            })
+        
+        # Create venue
+        venue = Venue(
+            name=name,
+            email=email,
+            subscription_status='trialing',
+            payment_provider='manual'
+        )
+        db.session.add(venue)
+        db.session.commit()
+        
+        return jsonify({
+            'status': 'created',
+            'venue_id': venue.id,
+            'slug': venue.slug,
+            'email': venue.email
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 # =============================================================================
 # INIT
 # =============================================================================
